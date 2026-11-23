@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Hunt Prep">
+<meta name="theme-color" content="#14201a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Hunt Prep</title>
+<style>
+:root{--bg:#f4f3ee;--card:#fff;--ink:#1c2420;--mut:#6b756f;--line:#dcdcd2;--acc:#2f6b4f;--acc2:#e8f1ec;--warn:#b86a12;--warn2:#fbf0e1;--bad:#a8322d;--bad2:#f8e7e6;--hot:#1c2420}
+@media(prefers-color-scheme:dark){:root{--bg:#10150f;--card:#1a211b;--ink:#e8ede7;--mut:#93a097;--line:#2b352d;--acc:#6fbf94;--acc2:#1d2c23;--warn:#e0a050;--warn2:#2e2414;--bad:#e5807a;--bad2:#341b1a;--hot:#e8ede7}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+body{padding:calc(env(safe-area-inset-top) + 10px) 14px calc(env(safe-area-inset-bottom) + 84px)}
+h1{font-size:22px;margin:4px 0 2px}h2{font-size:17px;margin:18px 0 8px}h3{font-size:15px;margin:0}
+.mut{color:var(--mut);font-size:13px}.row{display:flex;gap:8px;align-items:center}.sp{flex:1}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin:10px 0}
+.seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:none;color:var(--ink);font:inherit;font-weight:600;padding:9px 4px;border-radius:9px}
+.seg button.on{background:var(--acc);color:#fff}.seg button.on.hotel{background:var(--warn)}.seg button.on.off{background:#6b756f}
+button{font:inherit;color:var(--ink)}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 12px;font-weight:600}
+.btn.pri{background:var(--acc);color:#fff;border-color:var(--acc)}.btn.sm{padding:5px 9px;font-size:13px}
+.btn.bad{color:var(--bad)}
+.badge{font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;background:var(--acc2);color:var(--acc);text-transform:uppercase;letter-spacing:.03em}
+.badge.partial{background:var(--warn2);color:var(--warn)}.badge.missed,.badge.dropped,.badge.skipped{background:var(--bad2);color:var(--bad)}.badge.pending{background:var(--line);color:var(--mut)}
+.note{background:var(--warn2);color:var(--ink);border-left:3px solid var(--warn);border-radius:8px;padding:8px 10px;margin:8px 0;font-size:14px}
+.note.info{background:var(--acc2);border-color:var(--acc)}
+.item{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.item:first-of-type{border-top:0}
+.chk{flex:none;width:30px;height:30px;border-radius:9px;border:2px solid var(--line);background:none;color:transparent;font-size:18px;font-weight:800;line-height:1;padding:0}
+.item.done .chk{background:var(--acc);border-color:var(--acc);color:#fff}
+.item.done .lbl{color:var(--mut);text-decoration:line-through}
+.item.skipped .lbl{color:var(--mut)}
+.lbl{font-weight:600}.det{font-size:14px;color:var(--mut);margin-top:3px}
+.fields{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.fields label{display:flex;flex-direction:column;font-size:11px;color:var(--mut);gap:2px;width:74px}
+.fields input{width:100%;font-size:16px;padding:7px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.chip{display:inline-block;font-size:12px;font-weight:700;border:1px solid var(--line);border-radius:99px;padding:2px 9px;margin-top:6px;background:none}
+.chip.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding:6px 6px calc(env(safe-area-inset-bottom) + 6px)}
+.tabs button{flex:1;border:0;background:none;font-size:11px;font-weight:600;color:var(--mut);padding:6px 0;position:relative}
+.tabs button b{display:block;font-size:19px;line-height:1.2}
+.tabs button.on{color:var(--acc)}.dot{position:absolute;top:2px;right:24%;width:9px;height:9px;border-radius:50%;background:var(--bad)}
+.wk{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line)}.wk:first-of-type{border-top:0}
+.wk .d{width:44px;flex:none;font-weight:700}.wk .d small{display:block;font-weight:500;color:var(--mut);font-size:11px}
+.wk.today .d{color:var(--acc)}
+.mc{font-size:11px;font-weight:700;padding:1px 6px;border-radius:6px;background:var(--acc2);color:var(--acc)}.mc.hotel{background:var(--warn2);color:var(--warn)}.mc.off{background:var(--line);color:var(--mut)}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal .h{text-align:center;font-size:11px;color:var(--mut);font-weight:700}
+.cal button{aspect-ratio:1/1.05;border-radius:10px;border:1px solid var(--line);background:var(--acc2);font-weight:700;font-size:15px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.cal button small{font-size:9px;font-weight:700;text-transform:uppercase}
+.cal button.hotel{background:var(--warn2);color:var(--warn);border-color:var(--warn)}
+.cal button.off{background:var(--line);color:var(--mut)}.cal button.dim{opacity:.35}.cal button.t{outline:2px solid var(--acc)}
+.cal i{visibility:hidden}
+.bar{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px}.bar .n{width:34px;color:var(--mut)}.bar .b{height:14px;background:var(--acc);border-radius:4px;min-width:2px}.bar .v{color:var(--mut)}
+textarea{width:100%;min-height:90px;font:12px ui-monospace,Menlo,monospace;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);padding:8px}
+table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:6px 4px;border-top:1px solid var(--line);font-size:14px}th{font-size:12px;color:var(--mut);border:0}
+a{color:var(--acc)}
+ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<nav class="tabs" id="tabs"></nav>
+<script src="core.js"></script>
+<script>
+(function () {
+  'use strict';
+  var C = window.Core, Dt = C.Dt;
+  var KEY = 'huntprep.v1';
+  var q = new URLSearchParams(location.search);
+  var TODAY = (q.get('today') && /^\d{4}-\d{2}-\d{2}$/.test(q.get('today'))) ? q.get('today') : null;
+  var today = function () { return TODAY || Dt.local(); };
+
+  /* ---------- state ---------- */
+  function blank() { return { v: 1, modes: {}, tired: {}, items: {}, skip: {}, cant: {}, planned: {} }; }
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) { var s = JSON.parse(raw); return norm(s); }
+    } catch (e) {}
+    return blank();
+  }
+  function norm(s) {
+    var b = blank();
+    ['modes', 'tired', 'items', 'skip', 'cant', 'planned'].forEach(function (k) { b[k] = (s && typeof s[k] === 'object' && s[k]) || {}; });
+    return b;
+  }
+  var S = load();
+  var memOnly = false;
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { memOnly = true; }
+  }
+
+  var tab = 'today', viewDate = today(), weekView = null, calMonth = null;
+  var open = {}, drafts = {};
+
+  /* ---------- helpers ---------- */
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  function esc(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  var MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  function fmt(d) { var p = d.split('-'); return C.DN[Dt.dow(d)] + ' ' + MON[+p[1] - 1].slice(0, 3) + ' ' + (+p[2]); }
+  function modeOf(d) { return S.modes[d] || 'home'; }
+  function monthKey(d) { return d.slice(0, 7); }
+  function nextMonthKey(d) { var y = +d.slice(0, 4), m = +d.slice(5, 7); m++; if (m > 12) { m = 1; y++; } return y + '-' + (m < 10 ? '0' : '') + m; }
+  function needsPlan() {
+    var t = today(), dd = +t.slice(8, 10);
+    if (dd < 23 || t > C.TRIP) return null;
+    var nk = nextMonthKey(t);
+    if (nk > '2027-10') return null;
+    return S.planned[nk] ? null : nk;
+  }
+  function planOf(d) { return C.planWeek(C.weekNum(d), S, today()); }
+  function dayOf(d) { var p = planOf(d); return { plan: p, day: p.days[Dt.diff(d, p.ws)] }; }
+
+  /* ---------- item rendering ---------- */
+  function fieldVals(it, rec) {
+    var v = {};
+    if (rec && rec.done && rec.vals) v = rec.vals;
+    else if (drafts[it.id]) v = drafts[it.id];
+    return v;
+  }
+  function renderItem(it, date, kind) {
+    var rec = S.items[it.id];
+    var done = !!(rec && rec.done);
+    var sk = S.skip[it.id];
+    var v = fieldVals(it, rec);
+    var isOpen = !!open[it.id];
+    var h = '<div class="item' + (done ? ' done' : '') + (sk && !done ? ' skipped' : '') + '" data-id="' + esc(it.id) + '">';
+    h += '<button class="chk" data-act="tick" data-id="' + esc(it.id) + '" aria-label="Done">✓</button>';
+    h += '<div class="sp"><div class="lbl" data-act="open" data-id="' + esc(it.id) + '">' + esc(it.label) + (it.optional ? ' <span class="mut">(optional)</span>' : '') + (sk && !done ? ' <span class="mut">(skipped, make-up planned)</span>' : '') + '</div>';
+    if (it.clean) {
+      h += '<button class="chip' + (v.clean ? ' on' : '') + '" data-act="clean" data-id="' + esc(it.id) + '">Clean</button>';
+    }
+    if (isOpen || (it.detail && !done && !it.fields && it.detail.length < 60)) {
+      if (it.detail) h += '<div class="det">' + esc(it.detail) + '</div>';
+    }
+    if (isOpen && it.fields) {
+      h += '<div class="fields">';
+      it.fields.forEach(function (f) {
+        var val = v[f.k] != null ? v[f.k] : (f.d != null ? f.d : '');
+        h += '<label>' + esc(f.l) + '<input inputmode="decimal" data-f="' + f.k + '" data-id="' + esc(it.id) + '" value="' + esc(val) + '"></label>';
+      });
+      h += '</div>';
+    }
+    if (isOpen && it.mk && !done) {
+      h += '<div style="margin-top:8px"><button class="btn sm' + (sk ? '' : ' bad') + '" data-act="skip" data-id="' + esc(it.id) + '">' + (sk ? 'Undo skip' : "Can't do this, make it up later") + '</button></div>';
+    }
+    h += '</div></div>';
+    return h;
+  }
+
+  function badge(st) { return '<span class="badge ' + st + '">' + st + '</span>'; }
+
+  function renderSession(e, day) {
+    var def = e.def, variant = day.mode === 'hotel' ? 'hotel' : 'home';
+    var title = C.titleOf(def);
+    var h = '<div class="card"><div class="row"><h3 class="sp">' + esc(title) + '</h3>' + badge(e.status) + '</div>';
+    var meta = '~' + C.hm(C.estMin(def)) + (variant === 'hotel' ? ' · hotel version' : '');
+    h += '<div class="mut">' + esc(meta) + '</div>';
+    if (e.reason && (e.moved || e.status === 'dropped' || e.status === 'missed' || e.status === 'skipped' || e.swap)) h += '<div class="note">' + esc(e.reason) + '</div>';
+    if (e.status === 'dropped' || e.status === 'skipped' || e.status === 'missed') {
+      if (e.status === 'skipped') h += '<button class="btn sm" data-act="uncant" data-id="' + esc(def.id) + '">Undo</button>';
+      return h + '</div>';
+    }
+    var items = C.buildItems(def, variant, S);
+    var dn = items.filter(function (i) { return !i.optional; });
+    var nd = dn.filter(function (i) { var r = S.items[i.id]; return (r && r.done) || S.skip[i.id]; }).length;
+    h += '<div class="mut" style="margin-bottom:4px">' + nd + ' of ' + dn.length + '</div>';
+    items.forEach(function (it) {
+      if (def.spec && def.spec.t === 'leg' && it.mk) { it.ltypeSet = true; }
+      h += renderItem(it, day.date, def.kind);
+    });
+    if (e.status === 'pending' && C.RESCHED[def.kind] && !e.swap) {
+      h += '<div style="margin-top:8px"><button class="btn sm bad" data-act="cant" data-id="' + esc(def.id) + '">Can\'t do this today</button></div>';
+    }
+    if (S.cant[def.id] && e.status === 'pending') {
+      h += '<div style="margin-top:8px"><button class="btn sm" data-act="uncant" data-id="' + esc(def.id) + '">Undo "can\'t do"</button></div>';
+    }
+    return h + '</div>';
+  }
+
+  function renderMakeup(m, day) {
+    var it = { id: m.id, label: m.label, detail: m.detail, fields: m.fields, lift: m.lift, nop: true, clean: false, mk: false };
+    var h = '<div class="card"><div class="row"><h3 class="sp">Make-up work</h3><span class="badge partial">from ' + esc(m.from) + '</span></div>';
+    h += renderItem(it, day.date, 'mk');
+    return h + '</div>';
+  }
+
+  /* ---------- Today ---------- */
+  function viewToday() {
+    var d = viewDate, t = today(), w = C.weekNum(d), h = '';
+    if (t < C.START && d < C.START) {
+      var n = Dt.diff(C.START, t);
+      h += '<h1>Hunt Prep</h1><div class="card"><h3>Plan starts ' + fmt(C.START) + '</h3><div class="mut" style="margin:4px 0 10px">' + n + ' day' + (n === 1 ? '' : 's') + ' to go. Before then, set your home days and look at week 1.</div>' +
+        '<div class="row"><button class="btn pri" data-act="goto" data-d="' + C.START + '">Preview week 1</button><button class="btn" data-act="tab" data-t="home">Home days</button></div></div>';
+      h += planBanner();
+      return h;
+    }
+    if (w > C.LAST_WEEK) {
+      return '<h1>Hunt Prep</h1><div class="card"><h3>Trip time</h3><div class="mut">The plan ends ' + fmt(Dt.add(C.TRIP, -1)) + '. Hunt hard, hunt safe.</div></div>';
+    }
+    var ph = C.phaseOf(w), x = dayOf(d), day = x.day;
+    h += '<div class="row"><div class="sp"><h1>' + (d === t ? 'Today' : fmt(d)) + '</h1><div class="mut">' + fmt(d) + ' · Week ' + w + ' of ' + C.LAST_WEEK + ' · ' + C.PHASE_NAMES[ph] + (C.isDeload(w) ? ' · Deload' : '') + '</div></div>';
+    if (d !== t) h += '<button class="btn sm" data-act="goto" data-d="' + t + '">Today</button>';
+    h += '</div>';
+    h += planBanner();
+    h += '<div class="seg" style="margin:10px 0">';
+    [['home', 'Home'], ['hotel', 'Hotel'], ['off', 'Off']].forEach(function (m) {
+      h += '<button class="' + (modeOf(d) === m[0] ? 'on ' + m[0] : '') + '" data-act="mode" data-m="' + m[0] + '">' + m[1] + '</button>';
+    });
+    h += '</div><div class="row" style="margin-bottom:6px"><button class="chip' + (S.tired[d] ? ' on' : '') + '" data-act="tired">Tired today</button>' +
+      (!S.modes[d] ? '<span class="mut">Home is assumed until you tap.</span>' : '') + '</div>';
+    if (modeOf(d) === 'hotel') h += '<div class="note info">Hotel mode: dumbbells up to 50 lb and the hotel treadmill, no pack. Sessions switch to hotel versions.</div>';
+    var ch = x.plan.changes.filter(function (c) { return c.type !== 'dropped' || true; });
+    if (ch.length && d === t) {
+      h += '<div class="note"><b>Schedule changes this week</b><ul>' + ch.map(function (c) { return '<li>' + esc(c.text) + '</li>'; }).join('') + '</ul></div>';
+    }
+    if (modeOf(d) === 'off') h += '<div class="card"><h3>Off day</h3><div class="mut">Nothing scheduled. Key sessions move to other days this week.</div></div>';
+    var list = C.sortSessions(day.sessions);
+    list.forEach(function (e) { h += renderSession(e, day); });
+    day.makeups.forEach(function (m) { h += renderMakeup(m, day); });
+    if (!list.length && !day.makeups.length && modeOf(d) !== 'off') h += '<div class="card"><h3>Rest day</h3><div class="mut">Nothing planned. Walk, stretch, sleep.</div></div>';
+    return h;
+  }
+  function planBanner() {
+    var nk = needsPlan();
+    if (!nk) return '';
+    var p = nk.split('-');
+    return '<div class="note"><b>Plan ' + MON[+p[1] - 1] + '.</b> Set the days you will be home so I can place the treadmill, pack and leg sessions.<div style="margin-top:8px"><button class="btn sm pri" data-act="plan" data-k="' + nk + '">Open ' + MON[+p[1] - 1] + '</button></div></div>';
+  }
+
+  /* ---------- Week ---------- */
+  function viewWeek() {
+    var t = today();
+    var w = weekView || Math.min(Math.max(C.weekNum(t), 1), C.LAST_WEEK);
+    var p = C.planWeek(w, S, t);
+    var h = '<div class="row"><button class="btn sm" data-act="wk" data-n="-1">‹</button><div class="sp" style="text-align:center"><h1 style="margin:0">Week ' + w + '</h1><div class="mut">' + fmt(p.ws) + ' to ' + fmt(Dt.add(p.ws, 6)) + ' · ' + C.PHASE_NAMES[C.phaseOf(w)] + (C.isDeload(w) ? ' · Deload' : '') + '</div></div><button class="btn sm" data-act="wk" data-n="1">›</button></div>';
+    h += '<div class="card">';
+    p.days.forEach(function (day) {
+      var l = C.sortSessions(day.sessions);
+      h += '<div class="wk' + (day.date === t ? ' today' : '') + '" data-act="goto" data-d="' + day.date + '"><div class="d">' + C.DN[day.di] + '<small>' + (+day.date.slice(8)) + '</small></div><div class="sp">';
+      if (!l.length && !day.makeups.length) h += '<span class="mut">Rest</span>';
+      l.forEach(function (e) { h += '<div>' + esc(C.titleOf(e.def)) + ' ' + badge(e.status) + '</div>'; });
+      day.makeups.forEach(function (m) { h += '<div>' + esc(m.label) + '</div>'; });
+      h += '</div><div>' + (S.modes[day.date] ? '<span class="mc ' + day.mode + '">' + day.mode + '</span>' : '') + (day.tired ? ' <span class="mc off">tired</span>' : '') + '</div></div>';
+    });
+    h += '</div>';
+    if (p.changes.length) h += '<div class="note"><b>Changes</b><ul>' + p.changes.map(function (c) { return '<li>' + esc(c.text) + '</li>'; }).join('') + '</ul></div>';
+    return h;
+  }
+
+  /* ---------- Home days ---------- */
+  function viewHome() {
+    var t = today();
+    var mk = calMonth || (t < C.START ? '2026-11' : (t > C.TRIP ? '2027-10' : monthKey(t)));
+    var y = +mk.slice(0, 4), m = +mk.slice(5, 7);
+    var first = y + '-' + (m < 10 ? '0' : '') + m + '-01';
+    var dim = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    var off = Dt.dow(first);
+    var counts = { home: 0, hotel: 0, off: 0 };
+    var cells = '<div class="h">M</div><div class="h">T</div><div class="h">W</div><div class="h">T</div><div class="h">F</div><div class="h">S</div><div class="h">S</div>';
+    for (var i = 0; i < off; i++) cells += '<i></i>';
+    for (var dd = 1; dd <= dim; dd++) {
+      var ds = y + '-' + (m < 10 ? '0' : '') + m + '-' + (dd < 10 ? '0' : '') + dd;
+      var md = modeOf(ds); counts[md]++;
+      var outside = ds < C.START || ds >= C.TRIP;
+      cells += '<button class="' + md + (outside ? ' dim' : '') + (ds === t ? ' t' : '') + '" data-act="cyc" data-d="' + ds + '">' + dd + '<small>' + (md === 'home' ? 'home' : md === 'hotel' ? 'away' : 'off') + '</small></button>';
+    }
+    var h = '<h1>Home days</h1><div class="mut">Tap a day to cycle Home, Away (hotel) or Off. Home days guarantee your treadmill, pack and home-gym leg work. Unmarked days count as home.</div>';
+    h += '<div class="row" style="margin:12px 0"><button class="btn sm" data-act="mon" data-n="-1">‹</button><div class="sp" style="text-align:center;font-weight:700">' + MON[m - 1] + ' ' + y + '</div><button class="btn sm" data-act="mon" data-n="1">›</button></div>';
+    h += '<div class="cal">' + cells + '</div>';
+    h += '<div class="row" style="margin:12px 0"><span class="mut sp">Home ' + counts.home + ' · Away ' + counts.hotel + ' · Off ' + counts.off + '</span>';
+    h += '<button class="btn sm' + (S.planned[mk] ? '' : ' pri') + '" data-act="planned" data-k="' + mk + '">' + (S.planned[mk] ? 'Planned ✓' : 'Mark month planned') + '</button></div>';
+    if (counts.home < 3 && counts.home + counts.hotel + counts.off > 0) h += '<div class="note">Fewer than 3 home days means long climbs and leg days may fall on hotel versions. At least one home day a week keeps one real leg session.</div>';
+    var nk = needsPlan();
+    if (nk) h += '<div class="note">It is on or past the 23rd: ' + MON[+nk.slice(5) - 1] + ' is not marked planned yet.</div>';
+    return h;
+  }
+
+  /* ---------- Stats ---------- */
+  function viewStats() {
+    var t = today();
+    var cw = Math.min(Math.max(C.weekNum(t), 0), C.LAST_WEEK);
+    var h = '<h1>Stats</h1>';
+    h += '<h2>Vertical climbed per week (m)</h2><div class="card">';
+    var rows = [], mx = 1;
+    for (var w = Math.max(1, cw - 11); w <= Math.max(cw, 1); w++) { var v = C.weekVertical(S, w); rows.push([w, v]); if (v > mx) mx = v; }
+    if (cw < 1) h += '<div class="mut">Starts with week 1.</div>';
+    rows.forEach(function (r) { h += '<div class="bar"><span class="n">W' + r[0] + '</span><span class="b" style="width:' + Math.round(r[1] / mx * 62) + '%"></span><span class="v">' + r[1] + '</span></div>'; });
+    h += '<div class="mut" style="margin-top:6px">Counted from minutes, incline and speed you log.</div></div>';
+    h += '<h2>Lift working weights (lb)</h2><div class="card"><table>';
+    Object.keys(C.LIFTS).forEach(function (k) {
+      h += '<tr><td>' + C.LIFTS[k].name + '</td><td style="text-align:right;font-weight:700">' + C.liftNext(k, S) + (k === 'bulg' ? ' each' : '') + '</td></tr>';
+    });
+    h += '</table></div>';
+    h += '<h2>Last 4 weeks completion</h2><div class="card">';
+    var any = false;
+    for (var k = Math.max(1, cw - 3); k <= cw; k++) {
+      var p = C.planWeek(k, S, t), tot = 0, dn = 0;
+      p.entries.forEach(function (e) { if (e.status === 'dropped') return; tot++; if (e.status === 'done') dn++; });
+      any = true;
+      h += '<div class="bar"><span class="n">W' + k + '</span><span class="b" style="width:' + Math.round((tot ? dn / tot : 0) * 62) + '%"></span><span class="v">' + dn + ' of ' + tot + '</span></div>';
+    }
+    if (!any) h += '<div class="mut">Nothing yet.</div>';
+    h += '</div><h2>Tests</h2><div class="card">';
+    var tests = [];
+    Object.keys(S.items).forEach(function (id) { var r = S.items[id]; if (r && r.done && r.ltype === 'test' && r.vals && r.vals.hr20) tests.push(r); });
+    tests.sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+    if (!tests.length) h += '<div class="mut">Threshold tests land in weeks 2, 12, 24 and 36. Log the average HR of the last 20 minutes.</div>';
+    else { h += '<table><tr><th>Date</th><th>HR last 20</th><th>Incline</th><th>km/h</th></tr>'; tests.forEach(function (r) { h += '<tr><td>' + fmt(r.date) + '</td><td>' + esc(r.vals.hr20) + '</td><td>' + esc(r.vals.inc || '') + '</td><td>' + esc(r.vals.spd || '') + '</td></tr>'; }); h += '</table>'; }
+    return h + '</div>';
+  }
+
+  /* ---------- More ---------- */
+  function viewMore() {
+    var h = '<h1>More</h1>';
+    h += '<h2>Backup</h2><div class="card"><div class="mut">The Home Screen app keeps its data separate from Safari. Copy a backup now and then and keep it in Notes or email.' + (memOnly ? ' <b>Storage is blocked right now; changes will be lost on close.</b>' : '') + '</div>';
+    h += '<div class="row" style="margin:10px 0"><button class="btn sm pri" data-act="export">Show backup</button><button class="btn sm" data-act="copy">Copy</button><button class="btn sm" data-act="share">Share</button></div><textarea id="bk" placeholder="Backup text appears here. To restore, paste it here and tap Restore."></textarea><div style="margin-top:8px"><button class="btn sm bad" data-act="restore">Restore from text</button></div></div>';
+    h += '<h2>How adjustments work</h2><div class="card"><ul>' +
+      '<li>Each morning set Home, Hotel or Off. Hotel switches the day to dumbbell and hotel-treadmill versions.</li>' +
+      '<li>Key sessions (intervals, threshold, long climbs, leg days) move to another day this week if you miss them, mark "can\'t do", or the day is off or tired. Hard days stay 48 hours apart.</li>' +
+      '<li>Long climbs and leg days prefer a home day. With a hotel day only, they still happen in the hotel version.</li>' +
+      '<li>One leg day a week is protected. The second one is dropped when there is no home day.</li>' +
+      '<li>Skip a single lift and it is rescheduled within 3 days onto a day with no hard session.</li>' +
+      '<li>Easy Z2, upper and easy days that you miss are dropped, not stacked.</li>' +
+      '<li>Lift weights go up 5 lb after a session where you tick "Clean". Deload, taper, hotel and make-up work never change them.</li></ul></div>';
+    h += '<h2>Install on iPhone</h2><div class="card"><ol style="padding-left:20px;margin:6px 0"><li>Open the page in Safari.</li><li>Tap Share, then Add to Home Screen.</li><li>Open it from the Home Screen icon. It works offline after the first load.</li></ol></div>';
+    h += '<h2>Plan</h2><div class="card"><div class="mut">Starts ' + fmt(C.START) + ' · trip ' + fmt(C.TRIP) + ' · ' + C.LAST_WEEK + ' weeks</div></div>';
+    h += '<h2>Reset</h2><div class="card"><button class="btn bad" data-act="reset">Erase all data</button></div>';
+    return h;
+  }
+
+  /* ---------- render ---------- */
+  var TABS = [['today', '●', 'Today'], ['week', '▤', 'Week'], ['home', '⌂', 'Home days'], ['stats', '▲', 'Stats'], ['more', '⋯', 'More']];
+  function render() {
+    var y = window.scrollY;
+    var el = $('#app');
+    el.innerHTML = tab === 'today' ? viewToday() : tab === 'week' ? viewWeek() : tab === 'home' ? viewHome() : tab === 'stats' ? viewStats() : viewMore();
+    $('#tabs').innerHTML = TABS.map(function (t) { return '<button class="' + (tab === t[0] ? 'on' : '') + '" data-act="tab" data-t="' + t[0] + '"><b>' + t[1] + '</b>' + t[2] + (t[0] === 'home' && needsPlan() ? '<span class="dot"></span>' : '') + '</button>'; }).join('');
+    window.scrollTo(0, y);
+  }
+
+  /* ---------- actions ---------- */
+  function readVals(id) {
+    var v = {}; var any = false;
+    document.querySelectorAll('input[data-f][data-id="' + cssEsc(id) + '"]').forEach(function (inp) { v[inp.getAttribute('data-f')] = inp.value; any = true; });
+    return any ? v : null;
+  }
+  function cssEsc(s) { return String(s).replace(/"/g, '\\"'); }
+  function findItem(id) {
+    // search the visible plan for item metadata
+    var x = dayOf(viewDate), day = x.day, found = null;
+    day.sessions.forEach(function (e) {
+      if (e.status === 'dropped' || e.status === 'skipped' || e.status === 'missed') return;
+      C.buildItems(e.def, day.mode === 'hotel' ? 'hotel' : 'home', S).forEach(function (it) { if (it.id === id) found = it; });
+    });
+    day.makeups.forEach(function (m) { if (m.id === id) found = { id: m.id, lift: m.lift, nop: true, fields: m.fields }; });
+    return found;
+  }
+  function num(s) { var n = parseFloat(String(s).replace(',', '.')); return isFinite(n) ? n : s; }
+
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-act]');
+    if (!b) return;
+    var a = b.getAttribute('data-act'), id = b.getAttribute('data-id');
+    if (a === 'tab') { tab = b.getAttribute('data-t'); render(); window.scrollTo(0, 0); return; }
+    if (a === 'goto') { viewDate = b.getAttribute('data-d'); tab = 'today'; render(); window.scrollTo(0, 0); return; }
+    if (a === 'mode') { var m = b.getAttribute('data-m'); S.modes[viewDate] = m; save(); render(); return; }
+    if (a === 'tired') { if (S.tired[viewDate]) delete S.tired[viewDate]; else S.tired[viewDate] = true; save(); render(); return; }
+    if (a === 'open') { open[id] = !open[id]; render(); return; }
+    if (a === 'clean') {
+      var rec = S.items[id];
+      if (rec && rec.done) { rec.vals = rec.vals || {}; rec.vals.clean = !rec.vals.clean; save(); }
+      else { drafts[id] = drafts[id] || {}; drafts[id].clean = !drafts[id].clean; }
+      render(); return;
+    }
+    if (a === 'tick') {
+      var cur = S.items[id];
+      if (cur && cur.done) { delete S.items[id]; save(); render(); return; }
+      var it = findItem(id) || {};
+      var dom = readVals(id) || {};
+      var dr = drafts[id] || {};
+      var vals = {};
+      (it.fields || []).forEach(function (f) { var raw = dom[f.k] != null ? dom[f.k] : (dr[f.k] != null ? dr[f.k] : f.d); if (raw !== undefined && raw !== '') vals[f.k] = num(raw); });
+      if (dr.clean) vals.clean = true;
+      S.items[id] = { done: true, date: viewDate, vals: vals };
+      if (it.lift) S.items[id].lift = it.lift;
+      if (it.ltype) S.items[id].ltype = it.ltype;
+      if (it.nop) S.items[id].nop = true;
+      delete S.skip[id]; delete drafts[id];
+      save(); render(); return;
+    }
+    if (a === 'skip') { if (S.skip[id]) delete S.skip[id]; else S.skip[id] = viewDate; save(); render(); return; }
+    if (a === 'cant') { S.cant[id] = viewDate; save(); render(); return; }
+    if (a === 'uncant') { delete S.cant[id]; save(); render(); return; }
+    if (a === 'wk') { var cw = weekView || Math.min(Math.max(C.weekNum(today()), 1), C.LAST_WEEK); weekView = Math.min(C.LAST_WEEK, Math.max(1, cw + (+b.getAttribute('data-n')))); render(); return; }
+    if (a === 'cyc') { var d = b.getAttribute('data-d'), cur2 = modeOf(d); var nx = cur2 === 'home' ? 'hotel' : cur2 === 'hotel' ? 'off' : 'home'; S.modes[d] = nx; save(); render(); return; }
+    if (a === 'mon') { var mk = calMonth || monthKey(today() < C.START ? C.START : today()); var y = +mk.slice(0, 4), m2 = +mk.slice(5, 7) + (+b.getAttribute('data-n')); if (m2 < 1) { m2 = 12; y--; } if (m2 > 12) { m2 = 1; y++; } calMonth = y + '-' + (m2 < 10 ? '0' : '') + m2; render(); return; }
+    if (a === 'planned') { var k = b.getAttribute('data-k'); if (S.planned[k]) delete S.planned[k]; else S.planned[k] = true; save(); render(); return; }
+    if (a === 'plan') { calMonth = b.getAttribute('data-k'); tab = 'home'; render(); window.scrollTo(0, 0); return; }
+    if (a === 'export') { $('#bk').value = JSON.stringify(S); return; }
+    if (a === 'copy') {
+      var ta = $('#bk'); ta.value = JSON.stringify(S); ta.select();
+      try { if (navigator.clipboard) navigator.clipboard.writeText(ta.value); else document.execCommand('copy'); } catch (e) { document.execCommand('copy'); }
+      return;
+    }
+    if (a === 'share') {
+      var txt = JSON.stringify(S);
+      if (navigator.share) navigator.share({ text: txt }).catch(function () {}); else { $('#bk').value = txt; }
+      return;
+    }
+    if (a === 'restore') {
+      var raw = $('#bk').value.trim();
+      try {
+        var o = JSON.parse(raw);
+        if (!o || o.v !== 1 || typeof o.items !== 'object') throw new Error('bad');
+        if (!confirm('Replace everything on this device with this backup?')) return;
+        S = norm(o); S.v = 1; save(); render(); alert('Restored.');
+      } catch (e) { alert('That text is not a valid backup.'); }
+      return;
+    }
+    if (a === 'reset') {
+      if (confirm('Erase all logs and settings?') && confirm('Really erase everything? This cannot be undone.')) { S = blank(); save(); drafts = {}; open = {}; render(); }
+    }
+  });
+  document.addEventListener('change', function (ev) {
+    var inp = ev.target;
+    if (!inp.matches || !inp.matches('input[data-f]')) return;
+    var id = inp.getAttribute('data-id'), f = inp.getAttribute('data-f');
+    var rec = S.items[id];
+    if (rec && rec.done) { rec.vals = rec.vals || {}; rec.vals[f] = inp.value === '' ? undefined : num(inp.value); save(); }
+    else { drafts[id] = drafts[id] || {}; drafts[id][f] = inp.value; }
+  });
+
+  /* midnight rollover: when app returns to foreground on a new day */
+  var lastDay = today();
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible' && today() !== lastDay) {
+      if (viewDate === lastDay) viewDate = today();
+      lastDay = today(); render();
+    }
+  });
+
+  render();
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  }
+  window.__hp = { get S() { return S; }, render: render, setTab: function (t) { tab = t; render(); } };
+})();
+</script>
+</body>
+</html>

@@ -169,6 +169,8 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
       if (e.status === 'skipped') h += '<button class="btn sm" data-act="uncant" data-id="' + esc(def.id) + '">Undo</button>';
       return h + '</div>';
     }
+    var sh = C.startHint(def, variant, S);
+    if (sh) h += '<div class="note info">' + esc(sh) + '</div>';
     var items = C.buildItems(def, variant, S);
     var dn = items.filter(function (i) { return !i.optional; });
     var nd = dn.filter(function (i) { var r = S.items[i.id]; return (r && r.done) || S.skip[i.id]; }).length;
@@ -193,6 +195,37 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
     return h + '</div>';
   }
 
+
+  /* ---------- legend ---------- */
+  var showLegend = false;
+  function legendHtml() {
+    var h = '<div class="card"><h3>Heart rate zones (bpm)</h3><table>' +
+      '<tr><td><b>Z1</b> recovery</td><td>up to 137</td></tr>' +
+      '<tr><td><b>Z2</b> easy aerobic</td><td>138-152 (cap 155)</td></tr>' +
+      '<tr><td><b>Z3</b> tempo</td><td>153-166</td></tr>' +
+      '<tr><td><b>Z4</b> threshold</td><td>167-176</td></tr>' +
+      '<tr><td><b>Z5</b> VO2max</td><td>177-190</td></tr></table>' +
+      '<div class="mut" style="margin-top:6px">Based on a running max of 196 and threshold of 176. Walking max can read 5-10 lower, so retest if you never reach Z5.</div></div>';
+    h += '<div class="card"><h3>What the codes mean</h3><ul>' +
+      '<li><b>4x4:</b> 4 minutes hard, 3 minutes easy, repeated. Reach 177+ by minute 2, finish at 183-188.</li>' +
+      '<li><b>6x3:</b> 3 minutes hard, 2 minutes easy, 6 rounds.</li>' +
+      '<li><b>10x1:</b> 1 minute hard, 1 minute easy, 10 times per set.</li>' +
+      '<li><b>Threshold (Z4):</b> steady blocks at 167-176 with a few easy minutes between.</li>' +
+      '<li><b>Loaded tempo (Z3):</b> steady 153-166 with the pack.</li>' +
+      '<li><b>Z2 climb / long climb:</b> easy and steady at 138-152, hands off the rails.</li>' +
+      '<li><b>Deload:</b> every 4th week, lighter on purpose.</li>' +
+      '<li><b>Clean:</b> every rep solid with 2 reps left in reserve. Clean sets add 5 lb next time.</li>' +
+      '<li><b>Vertical m:</b> metres climbed, from minutes, incline and speed.</li>' +
+      '<li><b>Hotel version:</b> dumbbells to 50 lb and hotel treadmill, no pack.</li></ul></div>';
+    h += '<div class="card"><h3>Starting settings (heart rate decides)</h3><ul>' +
+      '<li><b>Z2 climb:</b> about 4-5 km/h at 8-15%. Adjust until you sit at 138-152.</li>' +
+      '<li><b>Intervals:</b> start near 5 km/h at 25%. Change incline or speed to hit 177+ by minute 2. Recover at about 3 km/h.</li>' +
+      '<li><b>Long climb:</b> 600-900 vertical m per hour, about 4-4.5 km/h at 15-20%.</li>' +
+      '<li><b>Hotel treadmill:</b> max incline, then raise speed until you are in the zone.</li>' +
+      '<li>The app shows your last logged incline and speed to start from.</li></ul></div>';
+    return h;
+  }
+
   /* ---------- Today ---------- */
   function viewToday() {
     var d = viewDate, t = today(), w = C.weekNum(d), h = '';
@@ -215,8 +248,9 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
     [['home', 'Home'], ['hotel', 'Hotel'], ['off', 'Off']].forEach(function (m) {
       h += '<button class="' + (modeOf(d) === m[0] ? 'on ' + m[0] : '') + '" data-act="mode" data-m="' + m[0] + '">' + m[1] + '</button>';
     });
-    h += '</div><div class="row" style="margin-bottom:6px"><button class="chip' + (S.tired[d] ? ' on' : '') + '" data-act="tired">Tired today</button>' +
+    h += '</div><div class="row" style="margin-bottom:6px"><button class="chip' + (S.tired[d] ? ' on' : '') + '" data-act="tired">Tired today</button><button class="chip' + (showLegend ? ' on' : '') + '" data-act="legend">Zones</button>' +
       (!S.modes[d] ? '<span class="mut">Home is assumed until you tap.</span>' : '') + '</div>';
+    if (showLegend) h += legendHtml();
     if (modeOf(d) === 'hotel') h += '<div class="note info">Hotel mode: dumbbells up to 50 lb and the hotel treadmill, no pack. Sessions switch to hotel versions.</div>';
     var ch = x.plan.changes.filter(function (c) { return c.type !== 'dropped' || true; });
     if (ch.length && d === t) {
@@ -331,6 +365,7 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
       '<li>Skip a single lift and it is rescheduled within 3 days onto a day with no hard session.</li>' +
       '<li>Easy Z2, upper and easy days that you miss are dropped, not stacked.</li>' +
       '<li>Lift weights go up 5 lb after a session where you tick "Clean". Deload, taper, hotel and make-up work never change them.</li></ul></div>';
+    h += '<h2>Zones and codes</h2>' + legendHtml();
     h += '<h2>Install on iPhone</h2><div class="card"><ol style="padding-left:20px;margin:6px 0"><li>Open the page in Safari.</li><li>Tap Share, then Add to Home Screen.</li><li>Open it from the Home Screen icon. It works offline after the first load.</li></ol></div>';
     h += '<h2>Plan</h2><div class="card"><div class="mut">Starts ' + fmt(C.START) + ' · trip ' + fmt(C.TRIP) + ' · ' + C.LAST_WEEK + ' weeks</div></div>';
     h += '<h2>Reset</h2><div class="card"><button class="btn bad" data-act="reset">Erase all data</button></div>';
@@ -374,6 +409,7 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
     if (a === 'goto') { viewDate = b.getAttribute('data-d'); tab = 'today'; render(); window.scrollTo(0, 0); return; }
     if (a === 'mode') { var m = b.getAttribute('data-m'); S.modes[viewDate] = m; save(); render(); return; }
     if (a === 'tired') { if (S.tired[viewDate]) delete S.tired[viewDate]; else S.tired[viewDate] = true; save(); render(); return; }
+    if (a === 'legend') { showLegend = !showLegend; render(); return; }
     if (a === 'open') { open[id] = !open[id]; render(); return; }
     if (a === 'clean') {
       var rec = S.items[id];

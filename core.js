@@ -210,12 +210,12 @@
   function titleOf(def) {
     const s = def.spec;
     switch (s.t) {
-      case 'int44': return '4x4 VO2 intervals, ' + s.r + ' rounds';
-      case 'int63': return '6x3 min VO2 intervals';
+      case 'int44': return '4x4 VO2 intervals (Z5), ' + s.r + ' rounds';
+      case 'int63': return '6x3 min VO2 intervals (Z5)';
       case 'int101': return '10x1 min intervals, 2 sets';
       case 'int33': return 'Opener: 3x3 min at Z5';
-      case 'z4': return 'Threshold: ' + blocksLabel(s.b) + (s.pack ? ', pack ' + s.pack + ' lb' : '');
-      case 'z3': return 'Loaded tempo: ' + blocksLabel(s.b) + (s.pack ? ', pack ' + s.pack + ' lb' : '');
+      case 'z4': return 'Threshold (Z4): ' + blocksLabel(s.b) + (s.pack ? ', pack ' + s.pack + ' lb' : '');
+      case 'z3': return 'Loaded tempo (Z3): ' + blocksLabel(s.b) + (s.pack ? ', pack ' + s.pack + ' lb' : '');
       case 'z2': return (s.label || 'Z2 climb') + ', ' + s.min + ' min' + (s.pack ? ', pack ' + s.pack + ' lb' : '');
       case 'long':
         if (s.packout) return 'Packout simulation, ' + hm(s.min) + ', ' + s.pack + ' lb';
@@ -277,7 +277,7 @@
         it('warm', 'Warm-up, 10 min', '5 min easy at 5-8% incline, then 3 x 1 min stepping up with 1 min easy.');
         const inc = sp.inc ? ' Add 2 points of incline versus last block.' : '';
         for (let k = 1; k <= sp.r; k++) {
-          it('r' + k, 'Round ' + k + ' of ' + sp.r + ': 4 min hard, 3 min easy',
+          it('r' + k, 'Round ' + k + ' of ' + sp.r + ': 4 min at 177-190 bpm, 3 min easy',
             'HR 177+ by minute 2, finish 183-188. Recovery about 3 km/h, HR to 140 or lower.' +
             (hotel ? hotelInt : ' Start near 5 km/h at 25%, hold incline and switch with speed.') + (k === 1 ? lastTxt + inc : ''));
         }
@@ -287,7 +287,7 @@
       }
       case 'int63': {
         it('warm', 'Warm-up, 10 min', '5 min easy at 5-8% incline, then 3 x 1 min stepping up.');
-        for (let k = 1; k <= sp.r; k++) it('r' + k, 'Round ' + k + ' of ' + sp.r + ': 3 min hard, 2 min easy', 'Same HR target as the 4x4: 177+ by minute 1.5.' + (hotel ? hotelInt : '') + (k === 1 ? lastTxt : ''));
+        for (let k = 1; k <= sp.r; k++) it('r' + k, 'Round ' + k + ' of ' + sp.r + ': 3 min at 177-190 bpm, 2 min easy', 'Same HR target as the 4x4: 177+ by minute 1.5.' + (hotel ? hotelInt : '') + (k === 1 ? lastTxt : ''));
         it('cool', 'Cool-down, 5 min', 'Easy walk.');
         it('log', 'Log the numbers', '', { fields: logFields, optional: true, ltype: sp.t });
         break;
@@ -301,7 +301,7 @@
       }
       case 'int33': {
         it('warm', 'Warm-up, 10 min', '5 min easy, then 3 x 1 min stepping up.');
-        for (let k = 1; k <= sp.r; k++) it('r' + k, 'Opener ' + k + ' of ' + sp.r + ': 3 min at Z5, 3 min easy', 'This is the last hard effort before the trip. Sharp, not heroic.' + (hotel ? hotelInt : ''));
+        for (let k = 1; k <= sp.r; k++) it('r' + k, 'Opener ' + k + ' of ' + sp.r + ': 3 min at 177-190 bpm, 3 min easy', 'This is the last hard effort before the trip. Sharp, not heroic.' + (hotel ? hotelInt : ''));
         it('cool', 'Cool-down, 5 min', 'Easy walk.');
         break;
       }
@@ -321,7 +321,7 @@
         let d = 'HR 138-152. Typical 4-5 km/h at 8-15%. Hands off the rails.';
         if (hotel) d = 'HR 138-152. Max incline, then raise speed until HR sits in the zone. Hands off the rails.' + (sp.pack ? ' No pack, so extra time.' : '');
         if (sp.map) d += ' Note which incline and speed give 140-150 bpm; that is your map.';
-        it('main', (sp.label || 'Z2 climb') + ': ' + mins + ' min' + (pack ? ', pack ' + pack + ' lb' : ''), d, { fields: climbFields(mins, pack), ltype: 'z2' });
+        it('main', (sp.label || 'Z2 climb') + ' (138-152 bpm): ' + mins + ' min' + (pack ? ', pack ' + pack + ' lb' : ''), d, { fields: climbFields(mins, pack), ltype: 'z2' });
         break;
       }
       case 'long': {
@@ -333,7 +333,7 @@
         if (hotel) d = 'Z2, HR 138-152. No pack and a limited hotel incline, so the time is 15% longer. Max incline, raise speed to hold the zone.';
         else if (sp.outdoor) d += ' Outdoors counts: hunting boots and your hunting pack, with poles on descents.';
         if (sp.packout && !hotel) d = 'Z2, mostly flat or rolling, once. Hunting pack, snug hip belt, hands off the rails.';
-        it('main', (sp.packout ? 'Packout simulation: ' : sp.easy ? 'Easy long climb: ' : 'Long climb: ') + mins + ' min in Z2' + (pack ? ', pack ' + pack + ' lb' : ''), d, { fields: climbFields(mins, pack), ltype: 'long' });
+        it('main', (sp.packout ? 'Packout simulation: ' : sp.easy ? 'Easy long climb: ' : 'Long climb: ') + mins + ' min in Z2 (138-152 bpm)' + (pack ? ', pack ' + pack + ' lb' : ''), d, { fields: climbFields(mins, pack), ltype: 'long' });
         break;
       }
       case 'test': {
@@ -400,6 +400,35 @@
     const solSets = info.ph === 1 || info.ph === 3 ? 4 : 3;
     it('sol', 'Soleus raise, bent knee, slow and heavy: ' + (info.dl ? solSets - 1 : solSets) + ' x 8', hotel ? 'Dumbbell on the knee, seated, or standing with a bent knee.' : 'Pain above 3 out of 10 means cut incline for a week.');
     if (sp.v !== 'B') it('calf', 'Standing calf raise: ' + (info.maint ? 2 : 3) + ' x 10', hotel ? 'Single leg, dumbbell in hand.' : '');
+  }
+
+
+  function startHint(def, variant, S) {
+    const sp = def.spec, hotel = variant === 'hotel';
+    const key = sp.t === 'z2' ? 'z2' : sp.t === 'long' ? 'long' : sp.t;
+    const lv = lastVals(S || { items: {} }, key);
+    const last = lv && (lv.inc || lv.spd) ? ' Last time: ' + (lv.inc || '?') + '% at ' + (lv.spd || '?') + ' km/h.' : '';
+    switch (sp.t) {
+      case 'int44': case 'int63': case 'int101': case 'int33':
+        return hotel
+          ? 'Target 177+ bpm by minute 2. Hotel treadmill: max incline, run or fast-walk, raise speed until you get there.' + last
+          : 'Target 177+ bpm by minute 2. Start near 5 km/h at 25%, then change incline or speed to get there. Recover at about 3 km/h.' + last;
+      case 'z4':
+        return 'Hold 167-176 bpm. Start from your Z2 setting and add 3-5 points of incline, then adjust.' + (hotel ? ' No pack: use max incline and speed.' : '') + last;
+      case 'z3':
+        return 'Hold 153-166 bpm. Start from your Z2 setting and add 2-3 points of incline, then adjust.' + (hotel ? ' No pack: use max incline and speed.' : '') + last;
+      case 'z2':
+        return hotel
+          ? 'Hold 138-152 bpm. Max incline, then raise speed until you are in the zone.' + last
+          : 'Hold 138-152 bpm. Start about 4-5 km/h at 8-15%, then adjust.' + last;
+      case 'long':
+        return hotel
+          ? 'Hold 138-152 bpm. Max incline, then raise speed until you are in the zone.' + last
+          : 'Hold 138-152 bpm at 600-900 vertical m per hour: about 4-4.5 km/h at 15-20%.' + last;
+      case 'test':
+        return 'Pick settings you can hold for 30 minutes. Start from your Z4 setting.' + last;
+      default: return '';
+    }
   }
 
   function reqKeys(def) {
@@ -617,7 +646,7 @@
 
   return {
     Dt, START, TRIP, LAST_WEEK, DN, weekNum, weekStart, phaseOf, PHASE_NAMES, isDeload, ZONES,
-    weekSessions, buildItems, planWeek, sortSessions, sessionVariant, titleOf, estMin, reqKeys,
+    weekSessions, buildItems, startHint, planWeek, sortSessions, sessionVariant, titleOf, estMin, reqKeys,
     liftNext, lastVals, vert, hm, weekVertical, LIFTS, HARD, LEG, RESCHED
   };
 });

@@ -113,10 +113,10 @@
       else add('legA', 'legA', 1, { t: 'leg', v: 'A', ph, w });
       add('z2', 'z2', 2, Z2(z2min(w)));
       add('h2', t.h2.t === 'test' ? 'test' : 'h2', 3, t.h2);
-      if (ph !== 2) add('legB', 'legB', 3, { t: 'leg', v: 'B', ph, w });
+      if (ph !== 2) add('legB', 'legB', 4, { t: 'leg', v: 'B', ph, w });
       add('push', 'push', 2, { t: 'push', ph, w });
-      add('pull', 'pull', 4, { t: 'pull', ph, w });
-      add('long', 'long', 5, { t: 'long', min: t.lg[0], pack: t.lg[1], outdoor: ph >= 3 });
+      add('pull', 'pull', 3, { t: 'pull', ph, w });
+      add('long', 'long', 5, { t: 'long', min: t.lg[0], pack: t.lg[1], outdoor: ph >= 3, w, oreq: ph >= 2 && w % 2 === 0 });
       if (t.long2) add('long2', 'long2', 6, t.long2);
     } else if (ph === 4) {
       const t = WK[w];
@@ -126,7 +126,7 @@
       add('easy', 'easy', 4, Z2(35, 0, 'Easy Z2'));
       add('push', 'push', 0, { t: 'push', ph: 4, w });
       add('pull', 'pull', 4, { t: 'pull', ph: 4, w });
-      add('long', 'long', 5, { t: 'long', min: t.lg[0], pack: t.lg[1], packtest: w === 40 });
+      add('long', 'long', 5, { t: 'long', min: t.lg[0], pack: t.lg[1], packtest: w === 40, w, oreq: w % 2 === 0 });
       if (t.long2) add('long2', 'long2', 6, t.long2);
     } else if (w === 45) {
       add('h1', 'h1', 1, Z2(60, 26, 'Loaded climb'));
@@ -156,13 +156,14 @@
   const LIFTS = {
     squat: { name: 'Back squat', start: 195, inc: 5, fl: 'lb', suf: ' lb' },
     trap: { name: 'Trap bar deadlift', start: 317, inc: 5, fl: 'lb', suf: ' lb' },
-    rdl: { name: 'Romanian deadlift', start: 215, inc: 5, fl: 'lb', suf: ' lb' },
+    rdl: { name: 'Romanian deadlift', start: 155, inc: 5, fl: 'lb', suf: ' lb' },
     bulg: { name: 'Bulgarian split squat', start: 35, inc: 5, fl: 'lb each', suf: ' lb dumbbells, each hand' },
-    bench: { name: 'Bench press', start: null, inc: 5, fl: 'lb', suf: ' lb' },
-    inc: { name: 'Incline dumbbell press', start: null, inc: 5, fl: 'lb each', suf: ' lb dumbbells, each hand' },
-    ohp: { name: 'Neutral-grip dumbbell shoulder press', start: null, inc: 5, fl: 'lb each', suf: ' lb dumbbells, each hand' },
+    bench: { name: 'Bench press', start: 165, inc: 5, fl: 'lb', suf: ' lb' },
+    inc: { name: 'Incline dumbbell press', start: 45, inc: 5, fl: 'lb each', suf: ' lb dumbbells, each hand' },
+    ohp: { name: 'Neutral-grip dumbbell shoulder press', start: 35, inc: 5, fl: 'lb each', suf: ' lb dumbbells, each hand' },
     pullup: { name: 'Pull-up, strict', start: 0, inc: 5, fl: 'lb added', suf: ' lb added' },
     row: { name: 'One-arm dumbbell row', start: null, inc: 5, fl: 'lb each', suf: ' lb dumbbell' },
+    stepup: { name: 'Loaded step-up, 40 cm box', start: null, inc: 5, fl: 'lb each', suf: ' lb dumbbells, each hand' },
     carry: { name: 'Heavy carry, farmer or suitcase', start: null, inc: 5, fl: 'lb each', suf: ' lb each hand' }
   };
   const RX = {
@@ -175,6 +176,7 @@
     ohp: { 1: [3, '8-10'], 2: [2, '8'], 3: [3, '8'], 4: [2, '8'] },
     pullup: { 1: [3, '6-8'], 2: [2, '5'], 3: [3, '6'], 4: [2, '5'] },
     row: { 1: [3, '8-10'], 2: [2, '8'], 3: [3, '8'], 4: [2, '8'] },
+    stepup: { 1: [3, '8'], 2: [2, '6'], 3: [3, '8'], 4: [2, '6'] },
     carry: { 1: [3, '1'], 2: [2, '1'], 3: [3, '1'], 4: [2, '1'] }
   };
   const HOTEL_LIFT = {
@@ -184,7 +186,65 @@
     bulg: { name: 'Dumbbell Bulgarian split squat, 50 lb each hand', reps: '10 each leg', n: 10 },
     step: { name: 'Dumbbell step-up, 50 lb each hand', reps: '10 each leg', n: 10 }
   };
+  HOTEL_LIFT.stepup = HOTEL_LIFT.step;
 
+  const VIDEOS = {
+    squat: { c: 'Squat University', v: '7v_V6xiA_AA' },
+    rdl: { c: 'Squat University', v: '5bJEigM5iVg' },
+    bulg: { c: 'Squat University', v: '-4LVK1crLSw' },
+    bench: { c: 'Jeremy Ethier', v: '4Y2ZdHCOXok' },
+    face: { c: 'ATHLEAN-X', v: 'ljgqer1ZpXg' },
+    row: { c: 'ATHLEAN-X', v: 'gfUg6qWohTk' },
+    pullup: { c: 'OPEX Fitness', v: 'rVRiy_HVz2g' },
+    rot: { c: 'Jeremy Ethier', v: '-NA8lUy5_Qc' },
+    trap: { c: 'Horton Barbell', v: 'dfYIApfWS5o' },
+    ohp: { c: 'OPEX Fitness', v: 'LZImFJfg12Q' },
+    stepup: { c: 'OPEX Fitness', v: 'Zp7RG4jFScw' },
+    slrdl: { c: 'OPEX Fitness', v: 'pJewPISyHjw' },
+    tricepext: { c: 'OPEX Fitness', v: 'a9oPnZReIRE' },
+    goblet: { c: 'OPEX Fitness', v: 'pEGfGwp6IEA' },
+    dbbench: { c: 'OPEX Fitness', v: 'Q7omzf7Bt1I' },
+    curl: { c: 'OPEX Fitness', v: '4hKyhFBeclI' },
+    reardelt: { c: 'OPEX Fitness', v: 'MMgl5ZtN278' },
+    pushup: { c: 'OPEX Fitness', v: 'Ql8PKKsDE70' },
+    calf: { c: 'OPEX Fitness', v: '9OKjv_iDa-g' },
+    hang: { c: 'OPEX Fitness', v: '0Bx_Ap7-EwU' },
+    dbrdl: { c: 'J2Fit', v: 'hQgFixeXdZo' },
+    cop: { c: 'E3 Rehab', v: 'YRRnnZsRs9U' },
+    spa: { c: 'Jake Tuura', v: 'NzBj2XEzySc' },
+    swing: { c: 'Zack Henderson', v: 'bDCeXbMJVNs' },
+    slam: { c: 'Horton Barbell', v: 'EsAhU1jHpiQ' },
+    kneeraise: { c: 'Signum Fitness', v: 'p9hhX_Sx5v0' },
+    inc: { c: 'Scott Herman Fitness', v: 'hChjZQhX1Ls' },
+    tri: { c: 'Alex Leonidas', v: '6IEwkw_pLf4' },
+    carry: { c: 'Lift With Michelle', v: 'ur4ou6mX7sw' },
+    pallof: { c: 'StrengthLab360', v: 'SsQWYNxlYsQ' }
+  };
+  const VSEARCH = {
+    inc: 'incline dumbbell press form tutorial', ohp: 'neutral grip dumbbell shoulder press form',
+    carry: 'suitcase carry farmer carry technique', tri: 'cable triceps pushdown form',
+    pushup: 'push-up proper form', hang: 'dead hang shoulder health technique',
+    reardelt: 'rear delt fly dumbbell form', curl: 'hammer curl form', pallof: 'pallof press tutorial',
+    kneeraise: 'hanging knee raise form', soleus: 'bent knee soleus calf raise', calf: 'standing calf raise form',
+    stepdown: 'slow eccentric step down knee tutorial', goblet: 'goblet squat form', dbrdl: 'dumbbell romanian deadlift form',
+    slrdl: 'single leg romanian deadlift dumbbell form', stepup: 'dumbbell step up form', tricepext: 'overhead dumbbell triceps extension form',
+    cop: 'copenhagen plank knee supported form', spa: 'spanish squat isometric hold form', swing: 'kettlebell swing form', slam: 'medicine ball slam form',
+    dbbench: 'dumbbell bench press form', rdl: 'romanian deadlift form', trap: 'trap bar deadlift form'
+  };
+  function videoFor(vk) {
+    if (!vk) return null;
+    const v = VIDEOS[vk];
+    if (v) return { url: 'https://www.youtube.com/watch?v=' + v.v, label: 'Video: ' + v.c, curated: true };
+    const q = VSEARCH[vk];
+    if (!q) return null;
+    return { url: 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q), label: 'Find a video', curated: false };
+  }
+
+  function descMin(w) {
+    if (!w || w < 25 || w >= 45) return 0;
+    if (w % 4 === 0) return 8;
+    return w <= 28 ? 8 : w <= 38 ? 12 : 15;
+  }
   function legSpecInfo(sp) {
     const ph = sp.ph === 5 ? 4 : sp.ph;
     const dl = isDeload(sp.w);
@@ -193,8 +253,8 @@
   }
   function legPlan(sp) {
     // returns ordered list of [slotKey, liftKey]
-    if (sp.v === 'A') return [['l1', 'trap'], ['l2', 'bulg']];
-    if (sp.v === 'B') return sp.ph === 3 ? [['l1', 'squat'], ['l2', 'rdl'], ['l3', 'step']] : [['l1', 'squat'], ['l2', 'rdl']];
+    if (sp.v === 'A') return [['l1', 'trap'], ['l2', 'stepup'], ['l3', 'bulg']];
+    if (sp.v === 'B') return [['l1', 'squat'], ['l2', 'rdl'], ['l3', 'step']];
     return [['l1', 'squat'], ['l2', 'trap'], ['l3', 'rdl'], ['l4', 'bulg']];
   }
 
@@ -353,6 +413,7 @@
       case 'z2': {
         const mins = hotel && sp.pack ? r5(sp.min * 1.15) : sp.min;
         const pack = hotel ? 0 : sp.pack;
+        it('wu', 'Warm-up, first 5 min', 'Start at 3-4 km/h and 5% incline and let HR climb under 138 before you settle into the zone. If hips or calves are tight, do 10 calf raises and 5 leg swings each side before stepping on.', { optional: true });
         let d = 'HR 138-152. Typical 4-5 km/h at 8-15%. Hands off the rails.';
         if (hotel) d = 'HR 138-152. Max incline, then raise speed until HR sits in the zone. Hands off the rails.' + (sp.pack ? ' No pack, so extra time.' : '');
         if (sp.map) d += ' Note which incline and speed give 140-150 bpm; that is your map.';
@@ -368,7 +429,11 @@
         if (hotel) d = 'Z2, HR 138-152. No pack and a limited hotel incline, so the time is 15% longer. Max incline, raise speed to hold the zone.';
         else if (sp.outdoor) d += ' Outdoors counts: hunting boots and your hunting pack, with poles on descents.';
         if (sp.packout && !hotel) d = 'Z2, mostly flat or rolling, once. Hunting pack, snug hip belt, hands off the rails.';
+        if (sp.oreq && !hotel) it('out', 'Outdoors this week', 'Do this climb outside if you can: your real boots, hunting pack, uneven ground, poles on the way down. The treadmill is the fallback.', { optional: true });
         it('main', (sp.packout ? 'Packout simulation: ' : sp.easy ? 'Easy long climb: ' : 'Long climb: ') + mins + ' min in Z2 (138-152 bpm)' + (pack ? ', pack ' + pack + ' lb' : ''), d, { fields: climbFields(mins, pack), ltype: 'long' });
+        const dm = descMin(sp.w);
+        if (dm && !hotel && !sp.easy) it('desc', 'Downhill block: ' + dm + ' min at -5% incline' + (pack ? ', pack ' + pack + ' lb' : ''), 'Walk 3-4 km/h on the decline, short steps, knees soft, no braking with a locked knee. This is eccentric work, so expect leg soreness the next day. If the treadmill will not go below 0, do slow step-downs instead.', { optional: true, vk: 'stepdown' });
+        if (sp.outdoor && !hotel && !sp.easy) it('shot', 'Shot hold at the end', 'Pack on. Step off, take 30 seconds to settle your breathing, then hold a steady rifle stance for 20 seconds. Log HR at the end of the climb and 30 seconds later.', { fields: [{ k: 'hrE', l: 'HR at end' }, { k: 'hr30', l: 'HR +30 s' }], optional: true });
         break;
       }
       case 'test': {
@@ -378,13 +443,26 @@
         it('cool', 'Cool-down, 5 min', 'Easy walk.');
         break;
       }
-      case 'leg': legItems(sp, hotel, S, it); break;
-      case 'push': case 'pull': pushPullItems(sp, hotel, S, it); break;
+      case 'leg': warmLift('leg', hotel, it); legItems(sp, hotel, S, it); break;
+      case 'push': case 'pull': warmLift(sp.t, hotel, it); pushPullItems(sp, hotel, S, it); break;
       default: break;
     }
     return I.map(x => Object.assign({ id: def.id + ':' + x.key }, x));
   }
 
+  function warmLift(kind, hotel, it) {
+    const band = hotel ? ' (skip the band moves if you did not pack one)' : '';
+    if (kind === 'leg') {
+      it('wu', 'Warm-up, 10 min', '3 min easy walk at 5-8% incline. Foot and ankle: short-foot hold x10 each foot, tibialis raise against a wall x15, single-leg balance 30 s each side. Then 1 round, smooth and slow: glute bridge x10, bodyweight squat with a 2 second pause at the bottom x8, reverse lunge x6 each side, side-step with a band x10 each way' + band + ', straight-leg calf raise x10, ankle rock against a wall x10 each side.');
+      it('ramp', 'Ramp-up sets on your first lift', 'Empty bar or light weight x8, about half the working weight x5, about 75% x3. Rest 45 seconds between. Do not log these.');
+    } else if (kind === 'push') {
+      it('wu', 'Warm-up, 8 min', '3 min easy walk. Then 1 round: band pull-apart x15' + band + ', scapular push-up x10, band external rotation x12 each side' + band + ', thoracic extension over a bench or rolled towel x8, cat-cow x8, 10 slow arm circles each way.');
+      it('ramp', 'Ramp-up sets on your first press', 'Empty bar or light dumbbells x10, about half the working weight x6, about 75% x3. Rest 45 seconds between. Do not log these.');
+    } else {
+      it('wu', 'Warm-up, 8 min', '3 min easy walk. Then 1 round: dead hang x20 seconds, scapular pull-up x8, band pull-apart x15' + band + ', cat-cow x8, bodyweight hip hinge x10, thoracic rotation on all fours x6 each side.');
+      it('ramp', 'Ramp-up sets on your first pull', 'Two light sets of 5, easy, then 1 set at about 75% of the working weight for 3. Do not log these.');
+    }
+  }
   const repsOf = str => { const p = String(str).split('-').map(Number); return { lo: p[0], hi: p[p.length - 1] }; };
   const adjW = (key, S, info) => {
     const w = liftNext(key, S);
@@ -403,7 +481,7 @@
       ? 'Hold the weight. 2 reps in reserve. Log what you actually did.'
       : 'Top of the rep range on every set adds ' + L.inc + ' lb next time. The minimum on every set holds the weight. A big miss lowers it 10%. Leave a set blank if you skipped it.';
     it(slot, L.name + ': ' + sets + ' x ' + repStr + at, detail, {
-      lift: key, nop: !!o.noProg, mk: !!o.mk, liftKey: key, fields, inline: true,
+      lift: key, vk: key, nop: !!o.noProg, mk: !!o.mk, liftKey: key, fields, inline: true,
       tgt: { s: sets, lo: r.lo, hi: r.hi }, chips: o.noProg ? null : [{ k: 'grind', l: 'Grindy, hold weight' }]
     });
   }
@@ -412,7 +490,7 @@
     const L = LIFTS.carry;
     const at = w == null ? ' (pick a heavy weight you can hold straight)' : ' at ' + w + L.suf;
     it(slot, L.name + ': ' + sets + ' x 40 m' + at, o.noProg ? 'Hold the weight. Tall posture, no leaning.' : 'If all walks were solid, tick it and the weight goes up ' + L.inc + ' lb next time.', {
-      lift: 'carry', nop: !!o.noProg, fields: [{ k: 'w', l: L.fl, d: w == null ? '' : w }], inline: true,
+      lift: 'carry', vk: 'carry', nop: !!o.noProg, fields: [{ k: 'w', l: L.fl, d: w == null ? '' : w }], inline: true,
       tgt: { ok: true, s: sets }, chips: o.noProg ? null : [{ k: 'ok', l: 'All walks solid' }]
     });
   }
@@ -420,7 +498,7 @@
     o = o || {};
     const fields = [{ k: 'w', l: 'lb each', d: 50 }];
     for (let i = 1; i <= sets; i++) fields.push({ k: 'r' + i, l: 'Set ' + i, d: n });
-    it(slot, name + ': ' + sets + ' x ' + reps, detail || 'Leave 2 reps in reserve. Hotel work never changes your home weights.', { nop: true, mk: !!o.mk, liftKey: o.liftKey, fields, inline: true });
+    it(slot, name + ': ' + sets + ' x ' + reps, detail || 'Leave 2 reps in reserve. Hotel work never changes your home weights.', { nop: true, mk: !!o.mk, liftKey: o.liftKey, vk: o.vk, fields, inline: true });
   }
 
   function legItems(sp, hotel, S, it) {
@@ -430,22 +508,25 @@
       const slot = pair[0], key = pair[1];
       if (key === 'step') {
         const sets = info.dl ? 2 : 3;
-        if (hotel) hotelLine(it, slot, HOTEL_LIFT.step.name, sets, HOTEL_LIFT.step.reps, HOTEL_LIFT.step.n, 'Bench or sturdy step. Leave 2 reps in reserve.', { mk: true });
-        else it(slot, 'Slow step-down, 40 cm box: ' + sets + ' x 10 each leg', '3 seconds down. Add the hunting pack or dumbbells when it feels easy.', { mk: true });
+        if (hotel) hotelLine(it, slot, HOTEL_LIFT.step.name, sets, HOTEL_LIFT.step.reps, HOTEL_LIFT.step.n, 'Bench or sturdy step. Leave 2 reps in reserve.', { mk: true, vk: 'stepup' });
+        else it(slot, 'Slow step-down, 40 cm box: ' + sets + ' x 8 each leg', '4 seconds down, touch the heel lightly, stand back up. This is your downhill protection. Hold the pack or dumbbells once it feels easy. Stop if the knee pinches.', { mk: true, vk: 'stepdown' });
         return;
       }
       const rx = RX[key][info.ph];
       const sets = setsFor(rx[0], info);
       if (hotel) {
         const h = HOTEL_LIFT[key];
-        hotelLine(it, slot, h.name, sets, h.reps, h.n, 'Leave 2 reps in reserve. Maintenance only; heavy numbers resume at home.', { mk: true, liftKey: key });
+        hotelLine(it, slot, h.name, sets, h.reps, h.n, 'Leave 2 reps in reserve. Maintenance only; heavy numbers resume at home.', { mk: true, liftKey: key, vk: { squat: 'goblet', trap: 'dbrdl', rdl: 'slrdl', bulg: 'bulg', stepup: 'stepup' }[key] });
         return;
       }
       liftLine(it, slot, key, sets, rx[1], adjW(key, S, info), { noProg: info.noProg, mk: true });
     });
+    const dsets = info.maint || info.dl ? 2 : 3;
+    it('cop', 'Copenhagen plank, knee supported: ' + dsets + ' x 15 s each side', 'Top foot on a bench, bottom knee on the floor. Groin and hip stability for steep ground. Stop if it pinches.', { vk: 'cop' });
+    it('spa', 'Spanish squat hold, band behind the knees: ' + dsets + ' x 30 s', 'Knee-friendly isometric for the tendons you load on descents. Shins vertical, sit back, pain no higher than 3 out of 10.', { vk: 'spa' });
     const solSets = info.ph === 1 || info.ph === 3 ? 4 : 3;
-    it('sol', 'Soleus raise, bent knee, slow and heavy: ' + (info.dl ? solSets - 1 : solSets) + ' x 8', hotel ? 'Dumbbell on the knee, seated, or standing with a bent knee.' : 'Pain above 3 out of 10 means cut incline for a week.');
-    if (sp.v !== 'B') it('calf', 'Standing calf raise: ' + (info.maint ? 2 : 3) + ' x 10', hotel ? 'Single leg, dumbbell in hand.' : '');
+    it('sol', 'Soleus raise, bent knee, slow and heavy: ' + (info.dl ? solSets - 1 : solSets) + ' x 8', hotel ? 'Dumbbell on the knee, seated, or standing with a bent knee.' : 'Pain above 3 out of 10 means cut incline for a week.', { vk: 'soleus' });
+    if (sp.v !== 'B') it('calf', 'Standing calf raise: ' + (info.maint ? 2 : 3) + ' x 10', hotel ? 'Single leg, dumbbell in hand.' : '', { vk: 'calf' });
   }
 
   function pushPullItems(sp, hotel, S, it) {
@@ -453,41 +534,45 @@
     const acc = info.maint ? 2 : 3;
     if (sp.t === 'push') {
       if (hotel) {
-        hotelLine(it, 'p1', 'Dumbbell bench press (floor press if no bench)', setsFor(3, info), '10-12', 12);
-        hotelLine(it, 'p2', 'Incline dumbbell press, or feet-elevated push-ups', setsFor(3, info), '12', 12);
-        hotelLine(it, 'p3', 'Neutral-grip dumbbell shoulder press', setsFor(3, info), '10', 10);
-        it('tri', 'Overhead dumbbell triceps extension: 2 x 12', 'Slow lowering.');
-        it('face', 'Face pull with a band, or rear-delt fly: 3 x 15', 'Light. Squeeze the shoulder blades.');
+        hotelLine(it, 'p1', 'Dumbbell bench press (floor press if no bench)', setsFor(3, info), '10-12', 12, null, { vk: 'dbbench' });
+        hotelLine(it, 'p2', 'Incline dumbbell press, or feet-elevated push-ups', setsFor(3, info), '12', 12, null, { vk: 'inc' });
+        hotelLine(it, 'p3', 'Neutral-grip dumbbell shoulder press', setsFor(3, info), '10', 10, null, { vk: 'ohp' });
+        it('tri', 'Overhead dumbbell triceps extension: 2 x 12', 'Slow lowering.', { vk: 'tricepext' });
+        it('face', 'Face pull with a band, or rear-delt fly: 3 x 15', 'Light. Squeeze the shoulder blades.', { vk: 'face' });
       } else {
         ['bench', 'inc', 'ohp'].forEach((key, i) => {
           const rx = RX[key][info.ph];
           liftLine(it, 'p' + (i + 1), key, setsFor(rx[0], info), rx[1], adjW(key, S, info), { noProg: info.noProg });
         });
-        it('tri', 'Triceps pushdown, cable or band: ' + acc + ' x 12', 'Controlled, full stretch at the top.');
-        it('face', 'Face pull: 3 x 15', 'Light. Pull to the forehead and hold 1 second.');
-        it('rot', 'Band external rotation: 2 x 15 each arm', 'Shoulder health for the pack and the draw.');
-        if (!info.maint && !info.dl) it('pu', 'Push-ups: 2 x max minus 2', 'Optional finisher.', { optional: true });
+        it('tri', 'Triceps pushdown, cable or band: ' + acc + ' x 12', 'Controlled, full stretch at the top.', { vk: 'tri' });
+        it('face', 'Face pull: 3 x 15', 'Light. Pull to the forehead and hold 1 second.', { vk: 'face' });
+        it('rot', 'Band external rotation: 2 x 15 each arm', 'Shoulder health for the pack and the draw.', { vk: 'rot' });
+        if (!info.maint && !info.dl) it('pu', 'Push-ups: 2 x max minus 2', 'Optional finisher.', { optional: true, vk: 'pushup' });
+      }
+      if (!info.maint && !info.dl) {
+        it('pow1', hotel ? 'Dumbbell swing: 3 x 12' : 'Kettlebell swing: 3 x 12', 'Hips drive it, arms just hang on. RPE 7. Power fades faster than strength after 50, so keep it fast and crisp.', { vk: 'swing' });
+        it('pow2', 'Medicine ball slam, or fast burpee-free alternative: 3 x 8', 'Explosive, then reset. Keep it light and quick.', { optional: true, vk: 'slam' });
       }
       it('mob', 'Shoulder and thoracic mobility, 8 min', '');
     } else {
       if (hotel) {
-        hotelLine(it, 'u1', 'One-arm dumbbell row, 50 lb', setsFor(3, info), '10 each side', 10);
-        hotelLine(it, 'u2', 'Pull-ups if there is a bar, otherwise dumbbell pullover', setsFor(3, info), '8', 8);
-        it('u3', 'Suitcase carry, 50 lb: 3 x 40 m', 'Tall posture, no leaning.');
-        it('u4', 'Rear-delt fly, light dumbbells: 2 x 15', '');
-        it('u5', 'Hammer curl: 2 x 12', '');
+        hotelLine(it, 'u1', 'One-arm dumbbell row, 50 lb', setsFor(3, info), '10 each side', 10, null, { vk: 'row' });
+        hotelLine(it, 'u2', 'Pull-ups if there is a bar, otherwise dumbbell pullover', setsFor(3, info), '8', 8, null, { vk: 'pullup' });
+        it('u3', 'Suitcase carry, 50 lb: 3 x 40 m', 'Tall posture, no leaning.', { vk: 'carry' });
+        it('u4', 'Rear-delt fly, light dumbbells: 2 x 15', '', { vk: 'reardelt' });
+        it('u5', 'Hammer curl: 2 x 12', '', { vk: 'curl' });
       } else {
         const pr = RX.pullup[info.ph], rr = RX.row[info.ph];
         liftLine(it, 'u1', 'pullup', setsFor(pr[0], info), pr[1], adjW('pullup', S, info), { noProg: info.noProg });
         liftLine(it, 'u2', 'row', setsFor(rr[0], info), rr[1], adjW('row', S, info), { noProg: info.noProg });
         carryLine(it, 'u3', info.maint ? 2 : 3, adjW('carry', S, info), { noProg: info.noProg });
-        it('u4', 'Dead hang: 2 x 30 s', 'Grip and shoulder health. Relaxed shoulders.');
-        it('u5', 'Rear-delt fly or band pull-aparts: 2 x 15', '');
-        it('u6', 'Hammer curl: ' + (info.maint ? 1 : 2) + ' x 10-12', '');
+        it('u4', 'Dead hang: 2 x 30 s', 'Grip and shoulder health. Relaxed shoulders.', { vk: 'hang' });
+        it('u5', 'Rear-delt fly or band pull-aparts: 2 x 15', '', { vk: 'reardelt' });
+        it('u6', 'Hammer curl: ' + (info.maint ? 1 : 2) + ' x 10-12', '', { vk: 'curl' });
       }
-      it('u7', 'Pallof press: 3 x 10 each side', 'Anti-rotation. Slow.');
-      it('u8', 'Hanging knee raise or lying leg raise: 3 x 10', '');
-      it('mob', 'Hips and thoracic mobility, 8 min', '');
+      it('u7', 'Pallof press: 3 x 10 each side', 'Anti-rotation. Slow.', { vk: 'pallof' });
+      it('u8', 'Hanging knee raise or lying leg raise: 3 x 10', '', { vk: 'kneeraise' });
+      it('mob', 'Hips and thoracic mobility, 8 min', '90/90 hip switches x8 each side, hip circles against a wall x6 each way, thoracic rotation on all fours x6 each side.');
     }
   }
 
@@ -702,7 +787,7 @@
         if (!tgt) { changes.push({ type: 'dropped', text: 'Dropped (no easy day within 3 days): ' + item.label.split(':')[0] }); return; }
         const v = tgt.mode === 'hotel' ? 'hotel' : 'home';
         const alt = buildItems(e.def, v, S).find(i => i.key === item.key) || item;
-        tgt.makeups.push({ id: 'MK:' + item.id, srcId: item.id, label: 'Make-up: ' + alt.label, detail: alt.detail, fields: alt.fields, lift: alt.lift, nop: true, inline: alt.inline, tgt: alt.tgt, chips: null, from: DN[idx(e.date)] });
+        tgt.makeups.push({ id: 'MK:' + item.id, srcId: item.id, label: 'Make-up: ' + alt.label, detail: alt.detail, fields: alt.fields, lift: alt.lift, nop: true, inline: alt.inline, tgt: alt.tgt, chips: null, vk: alt.vk, from: DN[idx(e.date)] });
         changes.push({ type: 'makeup', text: 'Make-up on ' + DN[tgt.di] + ': ' + item.label.split(':')[0] });
       });
     });
@@ -742,6 +827,6 @@
   return {
     Dt, START, TRIP, LAST_WEEK, DN, weekNum, weekStart, phaseOf, PHASE_NAMES, isDeload, ZONES,
     weekSessions, buildItems, startHint, planWeek, sortSessions, sessionVariant, titleOf, estMin, reqKeys,
-    liftNext, lastVals, vert, hm, weekVertical, LIFTS, HARD, LEG, RESCHED
+    liftNext, lastVals, videoFor, vert, hm, weekVertical, LIFTS, HARD, LEG, RESCHED
   };
 });

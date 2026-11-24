@@ -38,8 +38,8 @@ button{font:inherit;color:var(--ink)}
 .item.done .lbl{color:var(--mut);text-decoration:line-through}
 .item.skipped .lbl{color:var(--mut)}
 .lbl{font-weight:600}.det{font-size:14px;color:var(--mut);margin-top:3px}
-.fields{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.fields label{display:flex;flex-direction:column;font-size:11px;color:var(--mut);gap:2px;width:74px}
+.fields{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.fields label{display:flex;flex-direction:column;font-size:11px;color:var(--mut);gap:2px;width:64px}
 .fields input{width:100%;font-size:16px;padding:7px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
 .chip{display:inline-block;font-size:12px;font-weight:700;border:1px solid var(--line);border-radius:99px;padding:2px 9px;margin-top:6px;background:none}
 .chip.on{background:var(--acc);border-color:var(--acc);color:#fff}
@@ -62,6 +62,7 @@ button{font:inherit;color:var(--ink)}
 textarea{width:100%;min-height:90px;font:12px ui-monospace,Menlo,monospace;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);padding:8px}
 table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:6px 4px;border-top:1px solid var(--line);font-size:14px}th{font-size:12px;color:var(--mut);border:0}
 a{color:var(--acc)}
+.sw{width:72px;font-size:16px;padding:6px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);text-align:right}
 ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
 </style>
 </head>
@@ -79,7 +80,7 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
   var today = function () { return TODAY || Dt.local(); };
 
   /* ---------- state ---------- */
-  function blank() { return { v: 1, modes: {}, tired: {}, items: {}, skip: {}, cant: {}, planned: {} }; }
+  function blank() { return { v: 1, modes: {}, tired: {}, items: {}, skip: {}, cant: {}, planned: {}, start: {} }; }
   function load() {
     try {
       var raw = localStorage.getItem(KEY);
@@ -89,7 +90,7 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
   }
   function norm(s) {
     var b = blank();
-    ['modes', 'tired', 'items', 'skip', 'cant', 'planned'].forEach(function (k) { b[k] = (s && typeof s[k] === 'object' && s[k]) || {}; });
+    ['modes', 'tired', 'items', 'skip', 'cant', 'planned', 'start'].forEach(function (k) { b[k] = (s && typeof s[k] === 'object' && s[k]) || {}; });
     return b;
   }
   var S = load();
@@ -135,19 +136,29 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
     var h = '<div class="item' + (done ? ' done' : '') + (sk && !done ? ' skipped' : '') + '" data-id="' + esc(it.id) + '">';
     h += '<button class="chk" data-act="tick" data-id="' + esc(it.id) + '" aria-label="Done">✓</button>';
     h += '<div class="sp"><div class="lbl" data-act="open" data-id="' + esc(it.id) + '">' + esc(it.label) + (it.optional ? ' <span class="mut">(optional)</span>' : '') + (sk && !done ? ' <span class="mut">(skipped, make-up planned)</span>' : '') + '</div>';
-    if (it.clean) {
-      h += '<button class="chip' + (v.clean ? ' on' : '') + '" data-act="clean" data-id="' + esc(it.id) + '">Clean</button>';
+    if (it.chips) {
+      it.chips.forEach(function (c) {
+        h += '<button class="chip' + (v[c.k] ? ' on' : '') + '" data-act="chip" data-id="' + esc(it.id) + '" data-k="' + c.k + '">' + esc(c.l) + '</button> ';
+      });
     }
     if (isOpen || (it.detail && !done && !it.fields && it.detail.length < 60)) {
       if (it.detail) h += '<div class="det">' + esc(it.detail) + '</div>';
     }
-    if (isOpen && it.fields) {
+    if ((isOpen || it.inline) && it.fields) {
       h += '<div class="fields">';
       it.fields.forEach(function (f) {
         var val = v[f.k] != null ? v[f.k] : (f.d != null ? f.d : '');
         h += '<label>' + esc(f.l) + '<input inputmode="decimal" data-f="' + f.k + '" data-id="' + esc(it.id) + '" value="' + esc(val) + '"></label>';
       });
       h += '</div>';
+    }
+    if (done && it.lift && rec) {
+      var used = +((rec.vals || {}).w) || 0;
+      if (rec.nop) h += '<div class="det">Weight held. This session does not change your working weight.</div>';
+      else {
+        var nx = C.liftNext(it.lift, S);
+        if (nx != null) h += '<div class="det"><b>Next time: ' + nx + ' lb</b>' + (nx > used ? ' (up)' : nx < used ? ' (down)' : ' (hold)') + '</div>';
+      }
     }
     if (isOpen && it.mk && !done) {
       h += '<div style="margin-top:8px"><button class="btn sm' + (sk ? '' : ' bad') + '" data-act="skip" data-id="' + esc(it.id) + '">' + (sk ? 'Undo skip' : "Can't do this, make it up later") + '</button></div>';
@@ -169,6 +180,7 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
       if (e.status === 'skipped') h += '<button class="btn sm" data-act="uncant" data-id="' + esc(def.id) + '">Undo</button>';
       return h + '</div>';
     }
+    if (C.buildItems(def, variant, S).some(function (i) { return i.inline; })) h += '<div class="mut" style="margin:6px 0">Boxes start at the target. Change anything you missed, then tick.</div>';
     var sh = C.startHint(def, variant, S);
     if (sh) h += '<div class="note info">' + esc(sh) + '</div>';
     var items = C.buildItems(def, variant, S);
@@ -189,7 +201,7 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
   }
 
   function renderMakeup(m, day) {
-    var it = { id: m.id, label: m.label, detail: m.detail, fields: m.fields, lift: m.lift, nop: true, clean: false, mk: false };
+    var it = { id: m.id, label: m.label, detail: m.detail, fields: m.fields, lift: m.lift, nop: true, inline: m.inline, tgt: m.tgt, chips: null, mk: false };
     var h = '<div class="card"><div class="row"><h3 class="sp">Make-up work</h3><span class="badge partial">from ' + esc(m.from) + '</span></div>';
     h += renderItem(it, day.date, 'mk');
     return h + '</div>';
@@ -214,7 +226,9 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
       '<li><b>Loaded tempo (Z3):</b> steady 153-166 with the pack.</li>' +
       '<li><b>Z2 climb / long climb:</b> easy and steady at 138-152, hands off the rails.</li>' +
       '<li><b>Deload:</b> every 4th week, lighter on purpose.</li>' +
-      '<li><b>Clean:</b> every rep solid with 2 reps left in reserve. Clean sets add 5 lb next time.</li>' +
+      '<li><b>Weights and reps:</b> log the weight and the reps you got on each set. Top of the rep range on every set adds 5 lb next time. The minimum on every set holds it. A big miss drops it 10%. A blank set counts as skipped and holds it.</li>' +
+      '<li><b>Grindy:</b> tick it when the reps were there but it was a struggle. The weight holds.</li>' +
+      '<li><b>RIR:</b> reps in reserve. 2 means you could have done 2 more.</li>' +
       '<li><b>Vertical m:</b> metres climbed, from minutes, incline and speed.</li>' +
       '<li><b>Hotel version:</b> dumbbells to 50 lb and hotel treadmill, no pack.</li></ul></div>';
     h += '<div class="card"><h3>Starting settings (heart rate decides)</h3><ul>' +
@@ -329,9 +343,11 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
     if (cw < 1) h += '<div class="mut">Starts with week 1.</div>';
     rows.forEach(function (r) { h += '<div class="bar"><span class="n">W' + r[0] + '</span><span class="b" style="width:' + Math.round(r[1] / mx * 62) + '%"></span><span class="v">' + r[1] + '</span></div>'; });
     h += '<div class="mut" style="margin-top:6px">Counted from minutes, incline and speed you log.</div></div>';
-    h += '<h2>Lift working weights (lb)</h2><div class="card"><table>';
+    h += '<h2>Working weights (lb)</h2><div class="card"><div class="mut" style="margin-bottom:6px">Next session uses these. Type a number to set or override one; the app takes over from your logs after that.</div><table>';
     Object.keys(C.LIFTS).forEach(function (k) {
-      h += '<tr><td>' + C.LIFTS[k].name + '</td><td style="text-align:right;font-weight:700">' + C.liftNext(k, S) + (k === 'bulg' ? ' each' : '') + '</td></tr>';
+      var L = C.LIFTS[k], w = C.liftNext(k, S);
+      var unit = k === 'bulg' || k === 'inc' || k === 'ohp' || k === 'row' || k === 'carry' ? 'each' : k === 'pullup' ? 'added' : '';
+      h += '<tr><td>' + esc(L.name) + '</td><td style="text-align:right"><input class="sw" type="number" inputmode="decimal" data-start="' + k + '" value="' + (w == null ? '' : w) + '" placeholder="set"> <span class="mut">' + unit + '</span></td></tr>';
     });
     h += '</table></div>';
     h += '<h2>Last 4 weeks completion</h2><div class="card">';
@@ -364,7 +380,8 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
       '<li>One leg day a week is protected. The second one is dropped when there is no home day.</li>' +
       '<li>Skip a single lift and it is rescheduled within 3 days onto a day with no hard session.</li>' +
       '<li>Easy Z2, upper and easy days that you miss are dropped, not stacked.</li>' +
-      '<li>Lift weights go up 5 lb after a session where you tick "Clean". Deload, taper, hotel and make-up work never change them.</li></ul></div>';
+      '<li>Weights follow what you log: all sets at the top of the range goes up 5 lb, the minimum holds, a big miss drops 10%. Deload, maintenance, taper, hotel and make-up work never change them.</li>' +
+      '<li>Push and Pull days move within the week if you miss them, and use dumbbell versions in a hotel.</li></ul></div>';
     h += '<h2>Zones and codes</h2>' + legendHtml();
     h += '<h2>Install on iPhone</h2><div class="card"><ol style="padding-left:20px;margin:6px 0"><li>Open the page in Safari.</li><li>Tap Share, then Add to Home Screen.</li><li>Open it from the Home Screen icon. It works offline after the first load.</li></ol></div>';
     h += '<h2>Plan</h2><div class="card"><div class="mut">Starts ' + fmt(C.START) + ' · trip ' + fmt(C.TRIP) + ' · ' + C.LAST_WEEK + ' weeks</div></div>';
@@ -396,7 +413,7 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
       if (e.status === 'dropped' || e.status === 'skipped' || e.status === 'missed') return;
       C.buildItems(e.def, day.mode === 'hotel' ? 'hotel' : 'home', S).forEach(function (it) { if (it.id === id) found = it; });
     });
-    day.makeups.forEach(function (m) { if (m.id === id) found = { id: m.id, lift: m.lift, nop: true, fields: m.fields }; });
+    day.makeups.forEach(function (m) { if (m.id === id) found = { id: m.id, lift: m.lift, nop: true, fields: m.fields, tgt: m.tgt }; });
     return found;
   }
   function num(s) { var n = parseFloat(String(s).replace(',', '.')); return isFinite(n) ? n : s; }
@@ -411,10 +428,10 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
     if (a === 'tired') { if (S.tired[viewDate]) delete S.tired[viewDate]; else S.tired[viewDate] = true; save(); render(); return; }
     if (a === 'legend') { showLegend = !showLegend; render(); return; }
     if (a === 'open') { open[id] = !open[id]; render(); return; }
-    if (a === 'clean') {
-      var rec = S.items[id];
-      if (rec && rec.done) { rec.vals = rec.vals || {}; rec.vals.clean = !rec.vals.clean; save(); }
-      else { drafts[id] = drafts[id] || {}; drafts[id].clean = !drafts[id].clean; }
+    if (a === 'chip') {
+      var ck = b.getAttribute('data-k'), rec = S.items[id];
+      if (rec && rec.done) { rec.vals = rec.vals || {}; rec.vals[ck] = !rec.vals[ck]; save(); }
+      else { drafts[id] = drafts[id] || {}; drafts[id][ck] = !drafts[id][ck]; }
       render(); return;
     }
     if (a === 'tick') {
@@ -425,11 +442,13 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
       var dr = drafts[id] || {};
       var vals = {};
       (it.fields || []).forEach(function (f) { var raw = dom[f.k] != null ? dom[f.k] : (dr[f.k] != null ? dr[f.k] : f.d); if (raw !== undefined && raw !== '') vals[f.k] = num(raw); });
-      if (dr.clean) vals.clean = true;
+      (it.chips || []).forEach(function (c) { if (dr[c.k]) vals[c.k] = true; });
+      if (it.lift && !it.nop && it.tgt && vals.w === undefined) { alert('Enter the weight you used first.'); return; }
       S.items[id] = { done: true, date: viewDate, vals: vals };
       if (it.lift) S.items[id].lift = it.lift;
       if (it.ltype) S.items[id].ltype = it.ltype;
       if (it.nop) S.items[id].nop = true;
+      if (it.tgt) S.items[id].tgt = it.tgt;
       delete S.skip[id]; delete drafts[id];
       save(); render(); return;
     }
@@ -468,6 +487,11 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
   });
   document.addEventListener('change', function (ev) {
     var inp = ev.target;
+    if (inp.matches && inp.matches('input[data-start]')) {
+      var sk = inp.getAttribute('data-start');
+      if (inp.value === '') delete S.start[sk]; else S.start[sk] = { w: num(inp.value), d: today() };
+      save(); render(); return;
+    }
     if (!inp.matches || !inp.matches('input[data-f]')) return;
     var id = inp.getAttribute('data-id'), f = inp.getAttribute('data-f');
     var rec = S.items[id];

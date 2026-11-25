@@ -163,7 +163,7 @@
     ohp: { name: 'Neutral-grip dumbbell shoulder press', start: 35, inc: 5, fl: 'lb each', suf: ' lb dumbbells, each hand' },
     pullup: { name: 'Pull-up, strict', start: 0, inc: 5, fl: 'lb added', suf: ' lb added' },
     row: { name: 'One-arm dumbbell row', start: null, inc: 5, fl: 'lb each', suf: ' lb dumbbell' },
-    stepup: { name: 'Loaded step-up, 40 cm box', start: null, inc: 5, fl: 'lb each', suf: ' lb dumbbells, each hand' },
+    stepup: { name: 'Loaded step-up, 20-24 in box', start: null, inc: 5, fl: 'lb each', suf: ' lb dumbbells, each hand' },
     carry: { name: 'Heavy carry, farmer or suitcase', start: null, inc: 5, fl: 'lb each', suf: ' lb each hand' }
   };
   const RX = {
@@ -228,7 +228,7 @@
     kneeraise: 'hanging knee raise form', soleus: 'bent knee soleus calf raise', calf: 'standing calf raise form',
     stepdown: 'slow eccentric step down knee tutorial', goblet: 'goblet squat form', dbrdl: 'dumbbell romanian deadlift form',
     slrdl: 'single leg romanian deadlift dumbbell form', stepup: 'dumbbell step up form', tricepext: 'overhead dumbbell triceps extension form',
-    cop: 'copenhagen plank knee supported form', spa: 'spanish squat isometric hold form', swing: 'kettlebell swing form', slam: 'medicine ball slam form',
+    sq: 'adductor squeeze ball isometric exercise', cop: 'copenhagen plank knee supported form', spa: 'spanish squat isometric hold form', swing: 'kettlebell swing form', slam: 'medicine ball slam form',
     dbbench: 'dumbbell bench press form', rdl: 'romanian deadlift form', trap: 'trap bar deadlift form'
   };
   function videoFor(vk) {
@@ -413,7 +413,7 @@
       case 'z2': {
         const mins = hotel && sp.pack ? r5(sp.min * 1.15) : sp.min;
         const pack = hotel ? 0 : sp.pack;
-        it('wu', 'Warm-up, first 5 min', 'Start at 3-4 km/h and 5% incline and let HR climb under 138 before you settle into the zone. If hips or calves are tight, do 10 calf raises and 5 leg swings each side before stepping on.', { optional: true });
+        it('wu', 'Warm-up, first 5 min', 'Start at 3-4 km/h and 5% incline and let HR climb under 138 before you settle into the zone. If hips or calves are tight, do 10 calf raises and 5 leg swings each side before stepping on.', { optional: true, show: true });
         let d = 'HR 138-152. Typical 4-5 km/h at 8-15%. Hands off the rails.';
         if (hotel) d = 'HR 138-152. Max incline, then raise speed until HR sits in the zone. Hands off the rails.' + (sp.pack ? ' No pack, so extra time.' : '');
         if (sp.map) d += ' Note which incline and speed give 140-150 bpm; that is your map.';
@@ -451,16 +451,58 @@
   }
 
   function warmLift(kind, hotel, it) {
-    const band = hotel ? ' (skip the band moves if you did not pack one)' : '';
+    const band = hotel ? ' (skip if you did not pack a band)' : '';
+    const L = a => a.map(x => '\u2022 ' + x).join('\n');
     if (kind === 'leg') {
-      it('wu', 'Warm-up, 10 min', '3 min easy walk at 5-8% incline. Foot and ankle: short-foot hold x10 each foot, tibialis raise against a wall x15, single-leg balance 30 s each side. Then 1 round, smooth and slow: glute bridge x10, bodyweight squat with a 2 second pause at the bottom x8, reverse lunge x6 each side, side-step with a band x10 each way' + band + ', straight-leg calf raise x10, ankle rock against a wall x10 each side.');
-      it('ramp', 'Ramp-up sets on your first lift', 'Empty bar or light weight x8, about half the working weight x5, about 75% x3. Rest 45 seconds between. Do not log these.');
+      it('wu', 'Warm-up, 10 min: do each move once, smooth and slow', L([
+        '3 min easy walk at 5-8% incline',
+        'Short-foot hold x10 each foot',
+        'Tibialis raise against a wall x15',
+        'Single-leg balance, 30 s each side',
+        'Glute bridge x10',
+        'Bodyweight squat, 2 s pause at the bottom x8',
+        'Reverse lunge x6 each side',
+        'Band side-step x10 each way' + band,
+        'Straight-leg calf raise x10',
+        'Ankle rock against a wall x10 each side'
+      ]), { show: true });
+      it('ramp', 'Ramp-up sets on your first lift', L([
+        'Empty bar or light weight x8',
+        'About half the working weight x5',
+        'About 75% x3',
+        'Rest 45 s between. Do not log these.'
+      ]), { show: true });
     } else if (kind === 'push') {
-      it('wu', 'Warm-up, 8 min', '3 min easy walk. Then 1 round: band pull-apart x15' + band + ', scapular push-up x10, band external rotation x12 each side' + band + ', thoracic extension over a bench or rolled towel x8, cat-cow x8, 10 slow arm circles each way.');
-      it('ramp', 'Ramp-up sets on your first press', 'Empty bar or light dumbbells x10, about half the working weight x6, about 75% x3. Rest 45 seconds between. Do not log these.');
+      it('wu', 'Warm-up, 8 min: do each move once', L([
+        '3 min easy walk',
+        'Band pull-apart x15' + band,
+        'Scapular push-up x10',
+        'Band external rotation x12 each side' + band,
+        'Thoracic extension over a bench or rolled towel x8',
+        'Cat-cow x8',
+        'Arm circles x10 each way, slow'
+      ]), { show: true });
+      it('ramp', 'Ramp-up sets on your first press', L([
+        'Empty bar or light dumbbells x10',
+        'About half the working weight x6',
+        'About 75% x3',
+        'Rest 45 s between. Do not log these.'
+      ]), { show: true });
     } else {
-      it('wu', 'Warm-up, 8 min', '3 min easy walk. Then 1 round: dead hang x20 seconds, scapular pull-up x8, band pull-apart x15' + band + ', cat-cow x8, bodyweight hip hinge x10, thoracic rotation on all fours x6 each side.');
-      it('ramp', 'Ramp-up sets on your first pull', 'Two light sets of 5, easy, then 1 set at about 75% of the working weight for 3. Do not log these.');
+      it('wu', 'Warm-up, 8 min: do each move once', L([
+        '3 min easy walk',
+        'Dead hang, 20 s',
+        'Scapular pull-up x8',
+        'Band pull-apart x15' + band,
+        'Cat-cow x8',
+        'Bodyweight hip hinge x10',
+        'Thoracic rotation on all fours x6 each side'
+      ]), { show: true });
+      it('ramp', 'Ramp-up sets on your first pull', L([
+        'Two light sets of 5, easy',
+        'One set at about 75% of the working weight x3',
+        'Do not log these.'
+      ]), { show: true });
     }
   }
   const repsOf = str => { const p = String(str).split('-').map(Number); return { lo: p[0], hi: p[p.length - 1] }; };
@@ -509,7 +551,7 @@
       if (key === 'step') {
         const sets = info.dl ? 2 : 3;
         if (hotel) hotelLine(it, slot, HOTEL_LIFT.step.name, sets, HOTEL_LIFT.step.reps, HOTEL_LIFT.step.n, 'Bench or sturdy step. Leave 2 reps in reserve.', { mk: true, vk: 'stepup' });
-        else it(slot, 'Slow step-down, 40 cm box: ' + sets + ' x 8 each leg', '4 seconds down, touch the heel lightly, stand back up. This is your downhill protection. Hold the pack or dumbbells once it feels easy. Stop if the knee pinches.', { mk: true, vk: 'stepdown' });
+        else it(slot, 'Slow step-down, 20 in box: ' + sets + ' x 8 each leg', '4 seconds down, touch the heel lightly, stand back up. This is your downhill protection. Hold the pack or dumbbells once it feels easy. Stop if the knee pinches.', { mk: true, vk: 'stepdown' });
         return;
       }
       const rx = RX[key][info.ph];
@@ -522,7 +564,8 @@
       liftLine(it, slot, key, sets, rx[1], adjW(key, S, info), { noProg: info.noProg, mk: true });
     });
     const dsets = info.maint || info.dl ? 2 : 3;
-    it('cop', 'Copenhagen plank, knee supported: ' + dsets + ' x 15 s each side', 'Top foot on a bench, bottom knee on the floor. Groin and hip stability for steep ground. Stop if it pinches.', { vk: 'cop' });
+    if (S && S.groin) it('cop', 'Adductor squeeze, ball or pillow between the knees: ' + dsets + ' x 5 at about 50% effort', 'Squeeze for 8 seconds, rest 5. Pain 3 out of 10 or less and settled by morning. Move to the Copenhagen plank when this is pain-free for two weeks and you have cleared it with your physio.', { vk: 'sq' });
+    else it('cop', 'Copenhagen plank, knee supported: ' + dsets + ' x 15 s each side', 'Top foot on a bench, bottom knee on the floor. Groin and hip stability for steep ground. Stop if it pinches.', { vk: 'cop' });
     it('spa', 'Spanish squat hold, band behind the knees: ' + dsets + ' x 30 s', 'Knee-friendly isometric for the tendons you load on descents. Shins vertical, sit back, pain no higher than 3 out of 10.', { vk: 'spa' });
     const solSets = info.ph === 1 || info.ph === 3 ? 4 : 3;
     it('sol', 'Soleus raise, bent knee, slow and heavy: ' + (info.dl ? solSets - 1 : solSets) + ' x 8', hotel ? 'Dumbbell on the knee, seated, or standing with a bent knee.' : 'Pain above 3 out of 10 means cut incline for a week.', { vk: 'soleus' });
@@ -553,7 +596,7 @@
         it('pow1', hotel ? 'Dumbbell swing: 3 x 12' : 'Kettlebell swing: 3 x 12', 'Hips drive it, arms just hang on. RPE 7. Power fades faster than strength after 50, so keep it fast and crisp.', { vk: 'swing' });
         it('pow2', 'Medicine ball slam, or fast burpee-free alternative: 3 x 8', 'Explosive, then reset. Keep it light and quick.', { optional: true, vk: 'slam' });
       }
-      it('mob', 'Shoulder and thoracic mobility, 8 min', '');
+      it('mob', 'Shoulder and thoracic mobility, 8 min', '\u2022 Thread the needle x6 each side\n\u2022 Open-book thoracic rotation x8 each side\n\u2022 Wall slides x10\n\u2022 Doorway pec stretch, 30 s each side', { show: true });
     } else {
       if (hotel) {
         hotelLine(it, 'u1', 'One-arm dumbbell row, 50 lb', setsFor(3, info), '10 each side', 10, null, { vk: 'row' });
@@ -572,7 +615,7 @@
       }
       it('u7', 'Pallof press: 3 x 10 each side', 'Anti-rotation. Slow.', { vk: 'pallof' });
       it('u8', 'Hanging knee raise or lying leg raise: 3 x 10', '', { vk: 'kneeraise' });
-      it('mob', 'Hips and thoracic mobility, 8 min', '90/90 hip switches x8 each side, hip circles against a wall x6 each way, thoracic rotation on all fours x6 each side.');
+      it('mob', 'Hips and thoracic mobility, 8 min', '\u2022 90/90 hip switches x8 each side\n\u2022 Hip circles against a wall x6 each way\n\u2022 Thoracic rotation on all fours x6 each side\n\u2022 Child\'s pose with a side reach, 30 s each side', { show: true });
     }
   }
 

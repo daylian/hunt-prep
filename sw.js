@@ -1,4 +1,4 @@
-var CACHE = 'huntprep-v10';
+var CACHE = 'huntprep-v13';
 var FILES = ['./', 'index.html', 'core.js', 'manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', function (e) {

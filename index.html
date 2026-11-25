@@ -40,6 +40,10 @@ button{font:inherit;color:var(--ink)}
 .lbl{font-weight:600}.det{font-size:14px;color:var(--mut);margin-top:3px}
 .fields{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .fields label{display:flex;flex-direction:column;font-size:11px;color:var(--mut);gap:2px;width:64px}
+.fc{display:flex;flex-direction:column;gap:4px}
+.sb{width:64px;height:30px;border:1px solid var(--line);border-radius:8px;background:none;color:var(--mut);font-size:15px;font-weight:700}
+.sb.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.sr{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .fields input{width:100%;font-size:16px;padding:7px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
 .chip{display:inline-block;font-size:12px;font-weight:700;border:1px solid var(--line);border-radius:99px;padding:2px 9px;margin-top:6px;background:none}
 .chip.on{background:var(--acc);border-color:var(--acc);color:#fff}
@@ -62,6 +66,7 @@ button{font:inherit;color:var(--ink)}
 textarea{width:100%;min-height:90px;font:12px ui-monospace,Menlo,monospace;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);padding:8px}
 table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:6px 4px;border-top:1px solid var(--line);font-size:14px}th{font-size:12px;color:var(--mut);border:0}
 a{color:var(--acc)}
+.pl{white-space:pre-line}
 .vid{display:inline-block;font-size:13px;font-weight:600;margin-top:4px;text-decoration:none}
 .vid.s{color:var(--mut);font-weight:500}
 .sw{width:72px;font-size:16px;padding:6px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);text-align:right}
@@ -82,7 +87,7 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
   var today = function () { return TODAY || Dt.local(); };
 
   /* ---------- state ---------- */
-  function blank() { return { v: 1, modes: {}, tired: {}, items: {}, skip: {}, cant: {}, planned: {}, start: {}, sleep: {} }; }
+  function blank() { return { v: 1, modes: {}, tired: {}, items: {}, skip: {}, cant: {}, planned: {}, start: {}, sleep: {}, sets: {} }; }
   function load() {
     try {
       var raw = localStorage.getItem(KEY);
@@ -92,7 +97,8 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
   }
   function norm(s) {
     var b = blank();
-    ['modes', 'tired', 'items', 'skip', 'cant', 'planned', 'start', 'sleep'].forEach(function (k) { b[k] = (s && typeof s[k] === 'object' && s[k]) || {}; });
+    ['modes', 'tired', 'items', 'skip', 'cant', 'planned', 'start', 'sleep', 'sets'].forEach(function (k) { b[k] = (s && typeof s[k] === 'object' && s[k]) || {}; });
+    b.groin = !!(s && s.groin);
     return b;
   }
   var S = load();
@@ -129,6 +135,18 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
     else if (drafts[it.id]) v = drafts[it.id];
     return v;
   }
+  function setCount(it) {
+    var n = 0;
+    (it.fields || []).forEach(function (f) { if (/^r\d+$/.test(f.k)) n++; });
+    if (n) return n;
+    if (/^(Set|Round|Opener)\b/.test(it.label || '')) return 0;
+    var m = /: (\d+) x /.exec(it.label || '');
+    return m ? Math.min(+m[1], 8) : 0;
+  }
+  function setBtn(it, i, done) {
+    var on = done || !!((S.sets[it.id] || {})[i]);
+    return '<button class="sb' + (on ? ' on' : '') + '" data-act="set" data-id="' + esc(it.id) + '" data-n="' + i + '" aria-label="Set ' + i + ' done">' + (on ? '\u2713' : 'Set ' + i) + '</button>';
+  }
   function renderItem(it, date, kind) {
     var rec = S.items[it.id];
     var done = !!(rec && rec.done);
@@ -145,15 +163,22 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
         h += '<button class="chip' + (v[c.k] ? ' on' : '') + '" data-act="chip" data-id="' + esc(it.id) + '" data-k="' + c.k + '">' + esc(c.l) + '</button> ';
       });
     }
-    if (isOpen || (it.detail && !done && !it.fields && it.detail.length < 60)) {
-      if (it.detail) h += '<div class="det">' + esc(it.detail) + '</div>';
+    if (isOpen || (it.show && !done) || (it.detail && !done && !it.fields && it.detail.length < 60)) {
+      if (it.detail) h += '<div class="det' + (it.show ? ' pl' : '') + '">' + esc(it.detail) + '</div>';
     }
     if ((isOpen || it.inline) && it.fields) {
       h += '<div class="fields">';
       it.fields.forEach(function (f) {
         var val = v[f.k] != null ? v[f.k] : (f.d != null ? f.d : '');
-        h += '<label>' + esc(f.l) + '<input inputmode="decimal" data-f="' + f.k + '" data-id="' + esc(it.id) + '" value="' + esc(val) + '"></label>';
+        var rm = /^r(\d+)$/.exec(f.k);
+        h += '<div class="fc"><label>' + esc(f.l) + '<input inputmode="decimal" data-f="' + f.k + '" data-id="' + esc(it.id) + '" value="' + esc(val) + '"></label>' + (rm ? setBtn(it, +rm[1], done) : '') + '</div>';
       });
+      h += '</div>';
+    }
+    var sc = setCount(it);
+    if (sc && !(it.fields || []).some(function (f) { return /^r\d+$/.test(f.k); })) {
+      h += '<div class="sr">';
+      for (var si = 1; si <= sc; si++) h += setBtn(it, si, done);
       h += '</div>';
     }
     if (done && it.lift && rec) {
@@ -266,7 +291,7 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
     [['home', 'Home'], ['hotel', 'Hotel'], ['off', 'Off']].forEach(function (m) {
       h += '<button class="' + (modeOf(d) === m[0] ? 'on ' + m[0] : '') + '" data-act="mode" data-m="' + m[0] + '">' + m[1] + '</button>';
     });
-    h += '</div><div class="row" style="margin-bottom:6px"><button class="chip' + (S.tired[d] ? ' on' : '') + '" data-act="tired">Tired today</button><label class="mut" style="font-size:13px">Slept <input class="sw" type="number" inputmode="decimal" step="0.5" min="0" max="14" data-sleep="1" value="' + esc(S.sleep && S.sleep[d] != null ? S.sleep[d] : '') + '" style="width:54px"> h</label><button class="chip' + (showLegend ? ' on' : '') + '" data-act="legend">Zones</button>' +
+    h += '</div><div class="row" style="margin-bottom:6px"><button class="chip' + (S.tired[d] ? ' on' : '') + '" data-act="tired">Tired today</button><button class="chip' + (S.groin ? ' on' : '') + '" data-act="groin">Groin return</button><label class="mut" style="font-size:13px">Slept <input class="sw" type="number" inputmode="decimal" step="0.5" min="0" max="14" data-sleep="1" value="' + esc(S.sleep && S.sleep[d] != null ? S.sleep[d] : '') + '" style="width:54px"> h</label><button class="chip' + (showLegend ? ' on' : '') + '" data-act="legend">Zones</button>' +
       (!S.modes[d] ? '<span class="mut">Home is assumed until you tap.</span>' : '') + '</div>';
     if (showLegend) h += legendHtml();
     if (modeOf(d) === 'hotel') h += '<div class="note info">Hotel mode: dumbbells up to 50 lb and the hotel treadmill, no pack. Sessions switch to hotel versions.</div>';
@@ -430,6 +455,7 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
     if (a === 'goto') { viewDate = b.getAttribute('data-d'); tab = 'today'; render(); window.scrollTo(0, 0); return; }
     if (a === 'mode') { var m = b.getAttribute('data-m'); S.modes[viewDate] = m; save(); render(); return; }
     if (a === 'tired') { if (S.tired[viewDate]) delete S.tired[viewDate]; else S.tired[viewDate] = true; save(); render(); return; }
+    if (a === 'groin') { S.groin = !S.groin; save(); render(); return; }
     if (a === 'legend') { showLegend = !showLegend; render(); return; }
     if (a === 'open') { open[id] = !open[id]; render(); return; }
     if (a === 'chip') {
@@ -456,6 +482,7 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
       delete S.skip[id]; delete drafts[id];
       save(); render(); return;
     }
+    if (a === 'set') { var sn = +b.getAttribute('data-n'); S.sets = S.sets || {}; S.sets[id] = S.sets[id] || {}; if (S.sets[id][sn]) delete S.sets[id][sn]; else S.sets[id][sn] = true; save(); render(); return; }
     if (a === 'skip') { if (S.skip[id]) delete S.skip[id]; else S.skip[id] = viewDate; save(); render(); return; }
     if (a === 'cant') { S.cant[id] = viewDate; save(); render(); return; }
     if (a === 'uncant') { delete S.cant[id]; save(); render(); return; }

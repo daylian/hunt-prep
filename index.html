@@ -99,6 +99,7 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
     var b = blank();
     ['modes', 'tired', 'items', 'skip', 'cant', 'planned', 'start', 'sleep', 'sets'].forEach(function (k) { b[k] = (s && typeof s[k] === 'object' && s[k]) || {}; });
     b.groin = !!(s && s.groin);
+    b.dbmax = (s && +s.dbmax) || 0;
     return b;
   }
   var S = load();
@@ -186,7 +187,7 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
       if (rec.nop) h += '<div class="det">Weight held. This session does not change your working weight.</div>';
       else {
         var nx = C.liftNext(it.lift, S);
-        if (nx != null) h += '<div class="det"><b>Next time: ' + nx + ' lb</b>' + (nx > used ? ' (up)' : nx < used ? ' (down)' : ' (hold)') + '</div>';
+        if (nx != null) h += '<div class="det"><b>Next time: ' + nx + ' lb</b>' + (nx > used ? ' (up)' : nx < used ? ' (down)' : (C.capOf(it.lift, S) != null && nx >= C.capOf(it.lift, S) ? ' (your dumbbell max, add reps and tempo)' : ' (hold)')) + '</div>';
       }
     }
     if (isOpen && it.mk && !done) {
@@ -378,7 +379,7 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
       var unit = k === 'bulg' || k === 'inc' || k === 'ohp' || k === 'row' || k === 'carry' ? 'each' : k === 'pullup' ? 'added' : '';
       h += '<tr><td>' + esc(L.name) + '</td><td style="text-align:right"><input class="sw" type="number" inputmode="decimal" data-start="' + k + '" value="' + (w == null ? '' : w) + '" placeholder="set"> <span class="mut">' + unit + '</span></td></tr>';
     });
-    h += '</table></div>';
+    h += '</table><div style="margin-top:8px">Heaviest dumbbell at home (lb) <input class="sw" type="number" inputmode="decimal" data-dbmax="1" value="' + (S.dbmax || 50) + '"></div></div>';
     h += '<h2>Last 4 weeks completion</h2><div class="card">';
     var any = false;
     for (var k = Math.max(1, cw - 3); k <= cw; k++) {
@@ -521,6 +522,10 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
     if (inp.matches && inp.matches('input[data-start]')) {
       var sk = inp.getAttribute('data-start');
       if (inp.value === '') delete S.start[sk]; else S.start[sk] = { w: num(inp.value), d: today() };
+      save(); render(); return;
+    }
+    if (inp.matches && inp.matches('input[data-dbmax]')) {
+      S.dbmax = inp.value === '' ? 0 : num(inp.value);
       save(); render(); return;
     }
     if (inp.matches && inp.matches('input[data-sleep]')) {

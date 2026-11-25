@@ -259,7 +259,13 @@
   }
 
   /* ---------- logs helpers ---------- */
+  const DB_KEYS = { bulg: 1, inc: 1, ohp: 1, row: 1, stepup: 1 };
+  function capOf(key, S) { return DB_KEYS[key] ? ((S && +S.dbmax) || 50) : null; }
   function liftNext(key, S) {
+    const w = liftNextRaw(key, S), cap = capOf(key, S);
+    return w != null && cap != null && w > cap ? cap : w;
+  }
+  function liftNextRaw(key, S) {
     let best = null;
     const items = S.items || {};
     for (const id in items) {
@@ -515,12 +521,15 @@
 
   function liftLine(it, slot, key, sets, repStr, w, o) {
     o = o || {};
+    const cap = capOf(key, o.S), atCap = !o.noProg && cap != null && w != null && w >= cap;
+    if (atCap) { const q = repsOf(repStr); repStr = (q.hi + 2) + '-' + (q.hi + 5); }
     const L = LIFTS[key], r = repsOf(repStr);
     const fields = [{ k: 'w', l: L.fl, d: w == null ? '' : w }];
     for (let i = 1; i <= sets; i++) fields.push({ k: 'r' + i, l: 'Set ' + i, d: r.hi });
     const at = w == null ? ' (pick a weight that leaves 2 reps in reserve)' : (key === 'pullup' && w === 0 ? ' at bodyweight' : ' at ' + w + L.suf);
     const detail = o.noProg
       ? 'Hold the weight. 2 reps in reserve. Log what you actually did.'
+      : atCap ? 'These are your heaviest dumbbells (' + cap + ' lb), so progress with reps and tempo instead: 3 seconds down, 1 second pause at the bottom. All sets at the top of the range means it is time for a harder version (one arm at a time, or feet elevated).'
       : 'Top of the rep range on every set adds ' + L.inc + ' lb next time. The minimum on every set holds the weight. A big miss lowers it 10%. Leave a set blank if you skipped it.';
     it(slot, L.name + ': ' + sets + ' x ' + repStr + at, detail, {
       lift: key, vk: key, nop: !!o.noProg, mk: !!o.mk, liftKey: key, fields, inline: true,
@@ -561,7 +570,7 @@
         hotelLine(it, slot, h.name, sets, h.reps, h.n, 'Leave 2 reps in reserve. Maintenance only; heavy numbers resume at home.', { mk: true, liftKey: key, vk: { squat: 'goblet', trap: 'dbrdl', rdl: 'slrdl', bulg: 'bulg', stepup: 'stepup' }[key] });
         return;
       }
-      liftLine(it, slot, key, sets, rx[1], adjW(key, S, info), { noProg: info.noProg, mk: true });
+      liftLine(it, slot, key, sets, rx[1], adjW(key, S, info), { noProg: info.noProg, mk: true, S });
     });
     const dsets = info.maint || info.dl ? 2 : 3;
     if (S && S.groin) it('cop', 'Adductor squeeze, ball or pillow between the knees: ' + dsets + ' x 5 at about 50% effort', 'Squeeze for 8 seconds, rest 5. Pain 3 out of 10 or less and settled by morning. Move to the Copenhagen plank when this is pain-free for two weeks and you have cleared it with your physio.', { vk: 'sq' });
@@ -585,7 +594,7 @@
       } else {
         ['bench', 'inc', 'ohp'].forEach((key, i) => {
           const rx = RX[key][info.ph];
-          liftLine(it, 'p' + (i + 1), key, setsFor(rx[0], info), rx[1], adjW(key, S, info), { noProg: info.noProg });
+          liftLine(it, 'p' + (i + 1), key, setsFor(rx[0], info), rx[1], adjW(key, S, info), { noProg: info.noProg, S });
         });
         it('tri', 'Triceps pushdown, cable or band: ' + acc + ' x 12', 'Controlled, full stretch at the top.', { vk: 'tri' });
         it('face', 'Face pull: 3 x 15', 'Light. Pull to the forehead and hold 1 second.', { vk: 'face' });
@@ -607,7 +616,7 @@
       } else {
         const pr = RX.pullup[info.ph], rr = RX.row[info.ph];
         liftLine(it, 'u1', 'pullup', setsFor(pr[0], info), pr[1], adjW('pullup', S, info), { noProg: info.noProg });
-        liftLine(it, 'u2', 'row', setsFor(rr[0], info), rr[1], adjW('row', S, info), { noProg: info.noProg });
+        liftLine(it, 'u2', 'row', setsFor(rr[0], info), rr[1], adjW('row', S, info), { noProg: info.noProg, S });
         carryLine(it, 'u3', info.maint ? 2 : 3, adjW('carry', S, info), { noProg: info.noProg });
         it('u4', 'Dead hang: 2 x 30 s', 'Grip and shoulder health. Relaxed shoulders.', { vk: 'hang' });
         it('u5', 'Rear-delt fly or band pull-aparts: 2 x 15', '', { vk: 'reardelt' });
@@ -870,6 +879,6 @@
   return {
     Dt, START, TRIP, LAST_WEEK, DN, weekNum, weekStart, phaseOf, PHASE_NAMES, isDeload, ZONES,
     weekSessions, buildItems, startHint, planWeek, sortSessions, sessionVariant, titleOf, estMin, reqKeys,
-    liftNext, lastVals, videoFor, vert, hm, weekVertical, LIFTS, HARD, LEG, RESCHED
+    liftNext, capOf, lastVals, videoFor, vert, hm, weekVertical, LIFTS, HARD, LEG, RESCHED
   };
 });

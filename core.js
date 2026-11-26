@@ -524,14 +524,15 @@
     const cap = capOf(key, o.S), atCap = !o.noProg && cap != null && w != null && w >= cap;
     if (atCap) { const q = repsOf(repStr); repStr = (q.hi + 2) + '-' + (q.hi + 5); }
     const L = LIFTS[key], r = repsOf(repStr);
+    const nm = o.name || L.name;
     const fields = [{ k: 'w', l: L.fl, d: w == null ? '' : w }];
     for (let i = 1; i <= sets; i++) fields.push({ k: 'r' + i, l: 'Set ' + i, d: r.hi });
     const at = w == null ? ' (pick a weight that leaves 2 reps in reserve)' : (key === 'pullup' && w === 0 ? ' at bodyweight' : ' at ' + w + L.suf);
     const detail = o.noProg
-      ? 'Hold the weight. 2 reps in reserve. Log what you actually did.'
+      ? (o.note || 'Hold the weight. 2 reps in reserve. Log what you actually did.')
       : atCap ? 'These are your heaviest dumbbells (' + cap + ' lb), so progress with reps and tempo instead: 3 seconds down, 1 second pause at the bottom. All sets at the top of the range means it is time for a harder version (one arm at a time, or feet elevated).'
       : 'Top of the rep range on every set adds ' + L.inc + ' lb next time. The minimum on every set holds the weight. A big miss lowers it 10%. Leave a set blank if you skipped it.';
-    it(slot, L.name + ': ' + sets + ' x ' + repStr + at, detail, {
+    it(slot, nm + ': ' + sets + ' x ' + repStr + at, detail, {
       lift: key, vk: key, nop: !!o.noProg, mk: !!o.mk, liftKey: key, fields, inline: true,
       tgt: { s: sets, lo: r.lo, hi: r.hi }, chips: o.noProg ? null : [{ k: 'grind', l: 'Grindy, hold weight' }]
     });
@@ -540,7 +541,7 @@
     o = o || {};
     const L = LIFTS.carry;
     const at = w == null ? ' (pick a heavy weight you can hold straight)' : ' at ' + w + L.suf;
-    it(slot, L.name + ': ' + sets + ' x 40 m' + at, o.noProg ? 'Hold the weight. Tall posture, no leaning.' : 'If all walks were solid, tick it and the weight goes up ' + L.inc + ' lb next time.', {
+    it(slot, L.name + ': ' + sets + ' x 40 m' + at, o.noProg ? 'Hold the weight. Tall posture, no leaning.' : 'If all walks were solid, tick it and the weight goes up ' + L.inc + ' lb next time.' + (o.elbow ? ' Elbow mode: pain 3 out of 10 or less. If it goes above that, drop the weight or a set.' : ''), {
       lift: 'carry', vk: 'carry', nop: !!o.noProg, fields: [{ k: 'w', l: L.fl, d: w == null ? '' : w }], inline: true,
       tgt: { ok: true, s: sets }, chips: o.noProg ? null : [{ k: 'ok', l: 'All walks solid' }]
     });
@@ -612,15 +613,17 @@
         hotelLine(it, 'u2', 'Pull-ups if there is a bar, otherwise dumbbell pullover', setsFor(3, info), '8', 8, null, { vk: 'pullup' });
         it('u3', 'Suitcase carry, 50 lb: 3 x 40 m', 'Tall posture, no leaning.', { vk: 'carry' });
         it('u4', 'Rear-delt fly, light dumbbells: 2 x 15', '', { vk: 'reardelt' });
-        it('u5', 'Hammer curl: 2 x 12', '', { vk: 'curl' });
+        if (!(S && S.elbow)) it('u5', 'Hammer curl: 2 x 12', '', { vk: 'curl' });
       } else {
         const pr = RX.pullup[info.ph], rr = RX.row[info.ph];
-        liftLine(it, 'u1', 'pullup', setsFor(pr[0], info), pr[1], adjW('pullup', S, info), { noProg: info.noProg });
+        if (S && S.elbow) liftLine(it, 'u1', 'pullup', info.maint || info.dl ? 3 : 5, '3', 0, { noProg: true, name: 'Pull-up on rings, neutral grip', note: 'Elbow mode: start with the rings neutral, sets of 3, stop each set before pain goes above 3 out of 10. Bodyweight only. Add sets before reps.' });
+        else liftLine(it, 'u1', 'pullup', setsFor(pr[0], info), pr[1], adjW('pullup', S, info), { noProg: info.noProg });
         liftLine(it, 'u2', 'row', setsFor(rr[0], info), rr[1], adjW('row', S, info), { noProg: info.noProg, S });
-        carryLine(it, 'u3', info.maint ? 2 : 3, adjW('carry', S, info), { noProg: info.noProg });
+        carryLine(it, 'u3', info.maint ? 2 : 3, adjW('carry', S, info), { noProg: info.noProg, elbow: !!(S && S.elbow) });
         it('u4', 'Dead hang: 2 x 30 s', 'Grip and shoulder health. Relaxed shoulders.', { vk: 'hang' });
         it('u5', 'Rear-delt fly or band pull-aparts: 2 x 15', '', { vk: 'reardelt' });
-        it('u6', 'Hammer curl: ' + (info.maint ? 1 : 2) + ' x 10-12', '', { vk: 'curl' });
+        if (S && S.elbow) it('u6', 'Elbow exercises from your physio, or isometric wrist extension: 3 x 30 s', 'Do exactly what your physio gave you. Until then, a common starting option: forearm on a table, palm down, hold a light dumbbell level for 30 seconds. Pain 3 out of 10 or less and settled by morning.', { optional: true });
+        else it('u6', 'Hammer curl: ' + (info.maint ? 1 : 2) + ' x 10-12', '', { vk: 'curl' });
       }
       it('u7', 'Pallof press: 3 x 10 each side', 'Anti-rotation. Slow.', { vk: 'pallof' });
       it('u8', 'Hanging knee raise or lying leg raise: 3 x 10', '', { vk: 'kneeraise' });

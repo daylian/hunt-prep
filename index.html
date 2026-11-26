@@ -99,6 +99,7 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
     var b = blank();
     ['modes', 'tired', 'items', 'skip', 'cant', 'planned', 'start', 'sleep', 'sets'].forEach(function (k) { b[k] = (s && typeof s[k] === 'object' && s[k]) || {}; });
     b.groin = !!(s && s.groin);
+    b.elbow = !!(s && s.elbow);
     b.dbmax = (s && +s.dbmax) || 0;
     return b;
   }
@@ -292,7 +293,7 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
     [['home', 'Home'], ['hotel', 'Hotel'], ['off', 'Off']].forEach(function (m) {
       h += '<button class="' + (modeOf(d) === m[0] ? 'on ' + m[0] : '') + '" data-act="mode" data-m="' + m[0] + '">' + m[1] + '</button>';
     });
-    h += '</div><div class="row" style="margin-bottom:6px"><button class="chip' + (S.tired[d] ? ' on' : '') + '" data-act="tired">Tired today</button><button class="chip' + (S.groin ? ' on' : '') + '" data-act="groin">Groin return</button><label class="mut" style="font-size:13px">Slept <input class="sw" type="number" inputmode="decimal" step="0.5" min="0" max="14" data-sleep="1" value="' + esc(S.sleep && S.sleep[d] != null ? S.sleep[d] : '') + '" style="width:54px"> h</label><button class="chip' + (showLegend ? ' on' : '') + '" data-act="legend">Zones</button>' +
+    h += '</div><div class="row" style="margin-bottom:6px"><button class="chip' + (S.tired[d] ? ' on' : '') + '" data-act="tired">Tired today</button><button class="chip' + (S.groin ? ' on' : '') + '" data-act="groin">Groin return</button><button class="chip' + (S.elbow ? ' on' : '') + '" data-act="elbow">Elbow mode</button><label class="mut" style="font-size:13px">Slept <input class="sw" type="number" inputmode="decimal" step="0.5" min="0" max="14" data-sleep="1" value="' + esc(S.sleep && S.sleep[d] != null ? S.sleep[d] : '') + '" style="width:54px"> h</label><button class="chip' + (showLegend ? ' on' : '') + '" data-act="legend">Zones</button>' +
       (!S.modes[d] ? '<span class="mut">Home is assumed until you tap.</span>' : '') + '</div>';
     if (showLegend) h += legendHtml();
     if (modeOf(d) === 'hotel') h += '<div class="note info">Hotel mode: dumbbells up to 50 lb and the hotel treadmill, no pack. Sessions switch to hotel versions.</div>';
@@ -389,6 +390,17 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
       h += '<div class="bar"><span class="n">W' + k + '</span><span class="b" style="width:' + Math.round((tot ? dn / tot : 0) * 62) + '%"></span><span class="v">' + dn + ' of ' + tot + '</span></div>';
     }
     if (!any) h += '<div class="mut">Nothing yet.</div>';
+    h += '</div><h2>Z2 efficiency</h2><div class="card">';
+    var zr = [], grp = {};
+    Object.keys(S.items).forEach(function (id) { var r = S.items[id]; if (r && r.done && r.ltype === 'z2' && r.vals && +r.vals.hr > 0) zr.push(r); });
+    zr.sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+    if (!zr.length) h += '<div class="mut">Log average HR, incline and speed on your Z2 climbs. The same settings with a lower HR over the weeks means you are fitter.</div>';
+    else {
+      zr.forEach(function (r) { var k = (r.vals.inc || '?') + '% at ' + (r.vals.spd || '?') + ' km/h, pack ' + (r.vals.pack || 0) + ' lb'; (grp[k] = grp[k] || []).push(+r.vals.hr); });
+      h += '<table>';
+      Object.keys(grp).forEach(function (k) { var a = grp[k]; h += '<tr><td>' + esc(k) + '</td><td style="text-align:right">' + a.slice(-5).join(' \u2192 ') + ' bpm</td></tr>'; });
+      h += '</table><div class="mut" style="margin-top:6px">When the average at the same setting falls to about 140 or lower on two sessions, add speed, incline or pack.</div>';
+    }
     h += '</div><h2>Tests</h2><div class="card">';
     var tests = [];
     Object.keys(S.items).forEach(function (id) { var r = S.items[id]; if (r && r.done && r.ltype === 'test' && r.vals && r.vals.hr20) tests.push(r); });
@@ -457,6 +469,7 @@ ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
     if (a === 'mode') { var m = b.getAttribute('data-m'); S.modes[viewDate] = m; save(); render(); return; }
     if (a === 'tired') { if (S.tired[viewDate]) delete S.tired[viewDate]; else S.tired[viewDate] = true; save(); render(); return; }
     if (a === 'groin') { S.groin = !S.groin; save(); render(); return; }
+    if (a === 'elbow') { S.elbow = !S.elbow; save(); render(); return; }
     if (a === 'legend') { showLegend = !showLegend; render(); return; }
     if (a === 'open') { open[id] = !open[id]; render(); return; }
     if (a === 'chip') {
